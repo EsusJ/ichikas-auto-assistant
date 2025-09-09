@@ -2,6 +2,9 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 from tkinter import messagebox
+from tkinter import filedialog
+import os
+import shutil
 
 from .index import DesktopApp
 
@@ -27,6 +30,31 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_run_challenge_live = None
   btn_run_activity_story = None
   btn_run_cm = None
+
+  def _on_export_report() -> None:
+    try:
+      tmp_zip = app.service.export_report_zip()
+    except Exception as e:  # noqa: BLE001
+      messagebox.showerror("导出失败", f"生成报告失败：{e}", parent=app.root)
+      return
+    try:
+      initial_name = os.path.basename(tmp_zip)
+      save_path = filedialog.asksaveasfilename(
+        title="保存报告",
+        defaultextension=".zip",
+        initialfile=initial_name,
+        filetypes=[("Zip 文件", "*.zip")],
+        parent=app.root,
+      )
+      if not save_path:
+        return
+      shutil.copyfile(tmp_zip, save_path)
+      messagebox.showinfo("导出成功", "报告已保存。", parent=app.root)
+    except Exception as e:  # noqa: BLE001
+      messagebox.showerror("保存失败", f"保存报告失败：{e}", parent=app.root)
+
+  # 右侧导出按钮
+  btn_export = tb.Button(lf_power, text="导出报告", bootstyle="secondary", command=_on_export_report)  # type: ignore[call-arg]
 
   def _refresh_power_button() -> None:
     sch = app.service.scheduler
@@ -61,6 +89,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_toggle.configure(command=_on_toggle)
   btn_toggle.pack(side=tk.LEFT, padx=(12, 8), pady=10)
   lbl_current.pack(side=tk.LEFT, padx=(8, 12))
+  btn_export.pack(side=tk.RIGHT, padx=(12, 12), pady=10)
 
   def _schedule_refresh_loop() -> None:
     try:

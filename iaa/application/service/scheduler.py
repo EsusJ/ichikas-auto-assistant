@@ -4,9 +4,10 @@ import threading
 import os
 from typing import TYPE_CHECKING, Callable
 
+from kotonebot.client.device import Device
+
 if TYPE_CHECKING:
     from .iaa_service import IaaService
-
 from iaa.tasks.registry import REGULAR_TASKS, name_from_id
 from iaa.tasks.registry import MANUAL_TASKS
 from iaa.context import init as init_config_context
@@ -34,6 +35,8 @@ class SchedulerService:
         """当前正在执行的任务 ID"""
         self.current_task_name: str | None = None
         """当前正在执行的任务名称"""
+        self.device: Device | None = None
+        """当前正在执行的任务的设备"""
 
     @property
     def running(self) -> bool:
@@ -206,6 +209,7 @@ class SchedulerService:
             raise ValueError(f"Unknown emulator: {emulator}")
         device.target_resolution = (1280, 720)
         device.orientation = 'landscape'
+        self.device = device
         init_context(target_device=device)
 
         init_config_context(self.iaa.config.conf)

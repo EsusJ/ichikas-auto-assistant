@@ -1,8 +1,14 @@
 import os
 import sys
+import zipfile
 import logging
+import tempfile
+import traceback
 from datetime import datetime
 from functools import cached_property
+
+import cv2
+import numpy as np
 
 from .config_service import ConfigService
 from .assets_service import AssetsService
@@ -76,3 +82,49 @@ class IaaService:
         except Exception:
             pass
         return 'Unknown'
+
+    def export_report_zip(self) -> str:
+        """
+        生成报告 zip，包含 {root}/logs 与 {root}/conf。
+        返回生成的临时 zip 文件的绝对路径。
+        """
+        root_dir = self.root
+        logs_dir = os.path.join(root_dir, 'logs')
+        conf_dir = os.path.join(root_dir, 'conf')
+
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        filename = f"iaa_report_{timestamp}.zip"
+
+        # 在临时目录中创建 zip，避免权限问题
+        tmp_dir = tempfile.gettempdir()
+        zip_path = os.path.join(tmp_dir, filename)
+
+        def _zipdir(path: str, arc_prefix: str, zf: zipfile.ZipFile) -> None:
+            if not os.path.exists(path):
+                return
+            for folder_name, _, filenames in os.walk(path):
+                for fn in filenames:
+                    full_path = os.path.join(folder_name, fn)
+                    # 归档路径：以 arc_prefix 开头，保持相对目录结构
+                    rel_path = os.path.relpath(full_path, path)
+                    arcname = os.path.join(arc_prefix, rel_path)
+                    try:
+                        zf.write(full_path, arcname)
+                    except Exception:
+                        # 某些文件可能在占用或权限问题，跳过
+                        pass
+
+        with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+            _zipdir(logs_dir, 'logs', zf)
+            _zipdir(conf_dir, 'conf', zf)
+            try:
+                if not self.scheduler.device:
+                    raise RuntimeError("Device not initialized.")
+                img_data = self.scheduler.device.screenshot()
+                img_file = cv2.imencode('.png', img_data)[1].tobytes()
+                zf.writestr('screenshot.png', img_file)
+            except Exception:
+                tb = traceback.format_exc()
+                zf.writestr('screenshot_error.txt', tb)
+
+        return zip_path
