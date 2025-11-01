@@ -320,6 +320,7 @@ class SchedulerConfig(BaseModel):
     challenge_live_enabled: bool = True
     activity_story_enabled: bool = True
     cm_enabled: bool = True
+    gift_enabled: bool = True
 
     def is_enabled(self, task_id: str) -> bool:
         """根据任务标识判断是否启用。
@@ -330,6 +331,7 @@ class SchedulerConfig(BaseModel):
         - "solo_live"
         - "challenge_live"
         - "activity_story"
+        - "gift"
         """
         if task_id == 'start_game':
             return bool(self.start_game_enabled)
@@ -341,4 +343,6 @@ class SchedulerConfig(BaseModel):
             return bool(self.challenge_live_enabled)
         if task_id == 'activity_story':
             return bool(self.activity_story_enabled)
+        if task_id == 'gift':
+            return bool(self.gift_enabled)
         return False

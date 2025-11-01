@@ -13,6 +13,7 @@ class Store:
     var_challenge_live: tk.BooleanVar | None = None
     var_activity_story: tk.BooleanVar | None = None
     var_auto_cm: tk.BooleanVar | None = None
+    var_gift: tk.BooleanVar | None = None
     logo_image: tk.PhotoImage | None = None # LOGO 组件图片。防止被 GC
 
 class DesktopApp:
@@ -91,6 +92,8 @@ class DesktopApp:
             tasks.append("活动剧情")
         if self.store.var_auto_cm and self.store.var_auto_cm.get():
             tasks.append("自动 CM")
+        if self.store.var_gift and self.store.var_gift.get():
+            tasks.append("领取礼物")
         return tasks
 
     def _on_close(self) -> None:

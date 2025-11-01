@@ -19,7 +19,7 @@ def go_home(threshold_timeout: float = 0):
     th = Throttler(1)
     cd = Countdown(threshold_timeout)
     for _ in Loop():
-        if image.find(R.Hud.IconCrystal):
+        if image.find(R.Hud.ButtonLive):
             cd.start()
             logger.debug('Crystal icon found.')
             # 因为进入游戏后，公告弹窗会延迟弹出，因此不可以立即返回
