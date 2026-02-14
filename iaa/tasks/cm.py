@@ -1,5 +1,6 @@
 from kotonebot import logging
-from kotonebot import device, image, task, Loop, action, sleep
+from kotonebot.core import AnyOf
+from kotonebot import device, task, Loop, action, sleep
 
 from . import R
 from .common import go_home
@@ -10,10 +11,14 @@ WATCH_AD_WAIT_SEC = 70
 
 @action('是否位于交叉路口')
 def is_at_intersection() -> bool:
-    return image.find_multi([
-        R.Scene.Intersection.BuildingLogo,
-        R.Scene.Intersection.IconCm
-    ], threshold=0.8) is not None
+    # return AnyOf[
+    #     R.Scene.Intersection.BuildingLogo,
+    #     R.Scene.Intersection.IconCm
+    # ].find(threshold=0.8) is not None
+    return (
+        R.Scene.Intersection.BuildingLogo.find(threshold=0.8) is not None or
+        R.Scene.Intersection.IconCm.find(threshold=0.8) is not None
+    )
 
 @action('前往交叉路口', screenshot_mode='manual')
 def go_intersection():
@@ -28,15 +33,13 @@ def go_intersection():
         return
     # 打开地图
     for _ in Loop(interval=0.6):
-        if image.find(R.Map.ButtonOpenMap):
-            device.click()
+        if R.Map.ButtonOpenMap.try_click():
             logger.debug('Clicked open map button.')
             sleep(0.5)
-        elif image.find(R.Map.ButtonGoToReality):
+        elif R.Map.ButtonGoToReality.try_click():
             logger.info('Now at Sekai map. Changing to real world.')
-            device.click()
             sleep(0.5)
-        elif image.find(R.Map.ButtonGoToSekai):
+        elif R.Map.ButtonGoToSekai.find():
             logger.debug('Now at real world map.')
             break
     # 进入交叉路口
@@ -44,8 +47,7 @@ def go_intersection():
     swipe_count = 0
     MAX_SWIPE_COUNT = 5
     for _ in Loop(interval=0.6):
-        if image.find(R.Map.Intersection):
-            device.click()
+        if R.Map.Intersection.try_click():
             logger.debug('Clicked intersection on map.')
         elif is_at_intersection():
             logger.debug('Now at intersection.')
@@ -70,16 +72,16 @@ def open_cm() -> bool:
     swipe_count = 0
     MAX_SWIPE_COUNT = 5
     for _ in Loop(interval=0.6):
-        if ret := image.find(R.Scene.Intersection.IconCm, threshold=0.6):
+        if ret := R.Scene.Intersection.IconCm.find(threshold=0.6):
             # TODO: 改用 image.find 的 rect 参数重构
             x1, y1, x2, y2 = R.Cm.BoxCmIconDetectRect.xyxy
-            x, y = ret.position
+            x, y = ret.rect.center
             if x1 < x < x2 and y1 < y < y2:
                 logger.debug('CM icon is in the detection area.')
-                device.click()
+                device.click(x, y)
                 logger.debug('Clicked CM icon.')
             sleep(0.4)
-        elif image.find(R.Cm.ButtonPlayCm):
+        elif R.Cm.ButtonPlayCm.find():
             logger.debug('Now at CM.')
             return True
         else:
@@ -104,13 +106,11 @@ def clear_common_cm():
     for _ in Loop(interval=0.6):
         if state == 1:
             # 开始看
-            if image.find(R.Cm.ButtonCmStart, threshold=0.7):
-                device.click()
+            if R.Cm.ButtonCmStart.try_click(threshold=0.7):
                 logger.debug('Clicked 視聴開始 button.')
                 sleep(1)
                 state = 2
-            elif image.find(R.Cm.ButtonPlayCm):
-                device.click()
+            elif R.Cm.ButtonPlayCm.try_click():
                 logger.debug('Clicked CM start button.')
                 sleep(0.2)
             # 没有剩余广告了
@@ -118,7 +118,7 @@ def clear_common_cm():
                 logger.info('All ads cleared.')
                 break
         elif state == 2:
-            if image.find(R.Cm.ButtonPlayCm, threshold=0.7):
+            if R.Cm.ButtonPlayCm.find(threshold=0.7):
                 logger.debug('Loading ad...')
                 sleep(0.2)
             else:
@@ -136,16 +136,16 @@ def clear_common_cm():
             state = 4
         elif state == 4:
             # 由于广告没放完就点了跳过导致领取奖励失败
-            if image.find(R.Cm.TextCmFailed):
+            if R.Cm.TextCmFailed.find():
                 logger.info('Ad play failed due to early skip.')
                 device.click(1, 1) # 关闭弹窗
                 sleep(0.5)
                 state = 1
             # 看完了
-            elif image.find_multi([
+            elif AnyOf[
                 R.Cm.TextAwardClaimed,
                 R.Cm.TextApRecovered
-            ]):
+            ].find():
                 logger.info('Ad award claimed.')
                 device.click_center() # 关闭奖励领取提示
                 state = 1

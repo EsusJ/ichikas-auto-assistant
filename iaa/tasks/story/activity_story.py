@@ -1,4 +1,4 @@
-from kotonebot import action, task, Loop, device, image, sleep
+from kotonebot import action, task, Loop, device, sleep
 from kotonebot import logging
 
 from iaa.tasks.common import has_red_dot, go_home
@@ -22,20 +22,18 @@ def go_activity_story():
             # 第一次进入会自动阅读第一话
             skip_stories(mode='skip')
             continue
-        if image.find(R.Hud.ButtonLive):
-            device.click()
+        if R.Hud.ButtonLive.try_click():
             logger.debug('Clicked live button.')
             sleep(0.4)
-        elif image.find(R.Live.ButtonSoloLive):
+        elif R.Live.ButtonSoloLive.find():
             # 说明已经打开了手机页面，点击活动页
             device.click(R.Live.PointEventButton)
             logger.debug('Entered event.')
             sleep(1)
-        elif image.find(R.Activity.ButtonIconEventStory):
-            device.click()
+        elif R.Activity.ButtonIconEventStory.try_click():
             logger.debug('Clicked event story button.')
             sleep(0.4)
-        elif image.find(R.Story.TextEventStory):
+        elif R.Story.TextEventStory.find():
             logger.info('Now at story list.')
             break
 

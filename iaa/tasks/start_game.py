@@ -1,4 +1,4 @@
-from kotonebot import device, image, task, Loop, action, sleep
+from kotonebot import device, task, Loop, action
 from kotonebot import logging
 
 from iaa.config.schemas import LinkAccountOptions
@@ -16,21 +16,17 @@ def login(link_account: LinkAccountOptions):
     :param link_account: 账号引继方式，目前支持 'google_play'
     """
     for _ in Loop(interval=3):
-        if image.find(R.Login.TextLinkFinished):
+        if R.Login.TextLinkFinished.find():
             logger.debug('Link finished')
             logger.info('Login finished')
             break
-        if image.find(R.Login.ButtonLink):
-            device.click()
+        if R.Login.ButtonLink.try_click():
             logger.debug('Clicked 連携')
-        elif image.find(R.Login.ButtonIconLink):
-            device.click()
+        elif R.Login.ButtonIconLink.try_click():
             logger.debug('Clicked データ引き継ぎ')
-        elif link_account == 'google_play' and image.find(R.Login.ButtonLinkByGooglePlay):
-            device.click()
+        elif link_account == 'google_play' and R.Login.ButtonLinkByGooglePlay.try_click():
             logger.debug('Clicked GooglePlayで連携')
-        elif image.find(R.Login.ButtonMenu):
-            device.click()
+        elif R.Login.ButtonMenu.try_click():
             logger.debug('Clicked 右上角菜单按钮')
 
 @task('启动游戏', screenshot_mode='manual')

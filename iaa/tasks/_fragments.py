@@ -1,5 +1,3 @@
-from kotonebot import device, image
-
 from . import R
 
 
@@ -12,8 +10,7 @@ def handle_data_download():
 
     :return: 是否处理了数据下载对话框
     """
-    if image.find(R.CommonDialog.TextRecommendDownloadViaWifi):
-        if image.find(R.CommonDialog.ButtonDownload):
-            device.click()
+    if R.CommonDialog.TextRecommendDownloadViaWifi.find():
+        if R.CommonDialog.ButtonDownload.click():
             return True
     return False
