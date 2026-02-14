@@ -2,6 +2,9 @@ import tkinter as tk
 
 import ttkbootstrap as tb
 from tkinter import messagebox
+from tkinter import filedialog
+import os
+import shutil
 
 from .index import DesktopApp
 
@@ -27,6 +30,33 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_run_challenge_live = None
   btn_run_activity_story = None
   btn_run_cm = None
+  btn_run_gift = None
+  btn_run_ten_songs = None
+
+  def _on_export_report() -> None:
+    try:
+      tmp_zip = app.service.export_report_zip()
+    except Exception as e:  # noqa: BLE001
+      messagebox.showerror("导出失败", f"生成报告失败：{e}", parent=app.root)
+      return
+    try:
+      initial_name = os.path.basename(tmp_zip)
+      save_path = filedialog.asksaveasfilename(
+        title="保存报告",
+        defaultextension=".zip",
+        initialfile=initial_name,
+        filetypes=[("Zip 文件", "*.zip")],
+        parent=app.root,
+      )
+      if not save_path:
+        return
+      shutil.copyfile(tmp_zip, save_path)
+      messagebox.showinfo("导出成功", "报告已保存。", parent=app.root)
+    except Exception as e:  # noqa: BLE001
+      messagebox.showerror("保存失败", f"保存报告失败：{e}", parent=app.root)
+
+  # 右侧导出按钮
+  btn_export = tb.Button(lf_power, text="导出报告", bootstyle="secondary", command=_on_export_report)  # type: ignore[call-arg]
 
   def _refresh_power_button() -> None:
     sch = app.service.scheduler
@@ -41,7 +71,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     # 刷新单任务运行按钮状态
     try:
       is_run_disabled = is_transition or sch.running
-      for b in (btn_run_start_game, btn_run_single_live, btn_run_challenge_live, btn_run_activity_story, btn_run_cm):
+      for b in (btn_run_start_game, btn_run_single_live, btn_run_challenge_live, btn_run_activity_story, btn_run_cm, btn_run_gift, btn_run_ten_songs):
         if b is not None:
           b.configure(state=(tk.DISABLED if is_run_disabled else tk.NORMAL))
     except Exception:
@@ -61,6 +91,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_toggle.configure(command=_on_toggle)
   btn_toggle.pack(side=tk.LEFT, padx=(12, 8), pady=10)
   lbl_current.pack(side=tk.LEFT, padx=(8, 12))
+  btn_export.pack(side=tk.RIGHT, padx=(12, 12), pady=10)
 
   def _schedule_refresh_loop() -> None:
     try:
@@ -85,11 +116,13 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   var_challenge_live = tk.BooleanVar(value=bool(conf.scheduler.challenge_live_enabled))
   var_activity_story = tk.BooleanVar(value=bool(getattr(conf.scheduler, 'activity_story_enabled', True)))
   var_auto_cm = tk.BooleanVar(value=bool(conf.scheduler.cm_enabled))
+  var_gift = tk.BooleanVar(value=bool(getattr(conf.scheduler, 'gift_enabled', True)))
   app.store.var_start_game = var_start_game
   app.store.var_single_live = var_single_live
   app.store.var_challenge_live = var_challenge_live
   app.store.var_activity_story = var_activity_story
   app.store.var_auto_cm = var_auto_cm
+  app.store.var_gift = var_gift
 
   def _save_scheduler() -> None:
     conf.scheduler.start_game_enabled = bool(var_start_game.get())
@@ -97,6 +130,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     conf.scheduler.challenge_live_enabled = bool(var_challenge_live.get())
     conf.scheduler.activity_story_enabled = bool(var_activity_story.get())
     conf.scheduler.cm_enabled = bool(var_auto_cm.get())
+    conf.scheduler.gift_enabled = bool(var_gift.get())
     app.service.config.save()
 
   def _on_run(task_id: str) -> None:
@@ -111,6 +145,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   cb_challenge = tb.Checkbutton(lf_tasks, text="挑战演出", variable=var_challenge_live, command=_save_scheduler)
   cb_activity_story = tb.Checkbutton(lf_tasks, text="活动剧情", variable=var_activity_story, command=_save_scheduler)
   cb_cm = tb.Checkbutton(lf_tasks, text="自动 CM", variable=var_auto_cm, command=_save_scheduler)
+  cb_gift = tb.Checkbutton(lf_tasks, text="领取礼物", variable=var_gift, command=_save_scheduler)
 
   # 将每个复选框与其后的“▶”按钮并排放置
   cb_start_game.grid(row=0, column=0, sticky=tk.W, padx=20, pady=(16, 8))
@@ -133,6 +168,10 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_run_cm = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=lambda: _on_run("cm"))  # type: ignore[call-arg]
   btn_run_cm.grid(row=0, column=9, sticky=tk.W, padx=(4, 12), pady=(16, 8))
 
+  cb_gift.grid(row=1, column=0, sticky=tk.W, padx=20, pady=(8, 8))
+  btn_run_gift = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=lambda: _on_run("gift"))  # type: ignore[call-arg]
+  btn_run_gift.grid(row=1, column=1, sticky=tk.W, padx=(4, 12), pady=(8, 8))
+
   def _on_ten_songs() -> None:
     sch = app.service.scheduler
     if sch.is_starting or sch.is_stopping:
@@ -145,9 +184,15 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     if not confirm:
       return
     sch.run_single("ten_songs", run_in_thread=True)
+    _refresh_power_button()
 
-  btn_ten_songs = tb.Button(lf_tasks, text="刷完成歌曲首数", command=_on_ten_songs)
-  btn_ten_songs.grid(row=1, column=0, sticky=tk.W, padx=20, pady=(8, 16))
+  sep_ten_songs = tb.Separator(lf_tasks, orient=tk.HORIZONTAL)
+  sep_ten_songs.grid(row=2, column=0, columnspan=13, sticky=tk.EW, padx=20, pady=(8, 0))
+
+  lbl_ten_songs = tb.Label(lf_tasks, text="刷完成歌曲次数")
+  lbl_ten_songs.grid(row=3, column=0, sticky=tk.W, padx=20, pady=(8, 16))
+  btn_run_ten_songs = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=_on_ten_songs)  # type: ignore[call-arg]
+  btn_run_ten_songs.grid(row=3, column=1, sticky=tk.W, padx=(4, 12), pady=(8, 16))
 
   # 让容器在放大时保留边距（拉伸占位到最右侧）
-  lf_tasks.grid_columnconfigure(10, weight=1) 
+  lf_tasks.grid_columnconfigure(12, weight=1)

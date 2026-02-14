@@ -1,10 +1,9 @@
 from kotonebot import action, task, Loop, device, image, sleep
 from kotonebot import logging
 
-from iaa.tasks.common import has_red_dot
+from iaa.tasks.common import has_red_dot, go_home
 
 from .. import R
-from ..start_game import go_home
 from .._fragments import handle_data_download
 from ._common import enter_story, skip_stories
 
@@ -43,9 +42,11 @@ def go_activity_story():
 @task('刷当期活动剧情')
 def activity_story():
     go_activity_story()
-    if has_red_dot(R.Activity.BoxLatestEpisodeBadge):
+    badge_wl = has_red_dot(R.Activity.BoxLatestEpisodeBadgeWl)
+    badge = has_red_dot(R.Activity.BoxLatestEpisodeBadge)
+    if badge_wl or badge:
         logger.info('Unread activity story found. Entering story.')
-        enter_story()
+        enter_story(is_wl=badge_wl)
         skip_stories(mode='skip')
     else:
         logger.info('No unread activity story found.')

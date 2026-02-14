@@ -11,32 +11,51 @@
             "module": "iaa.main"
         },
         {
+            "name": "main (GUI)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_desktop.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "main (debug)",
             "type": "debugpy",
             "request": "launch",
             "module": "iaa.main",
-            "args": ["--debug"]
+            "args": [
+                "--debug"
+            ]
         },
         {
             "name": "current task",
             "type": "debugpy",
             "request": "launch",
             "module": "iaa.main",
-            "args": ["--task", "${fileBasenameNoExtension}"]
+            "args": [
+                "--task",
+                "${fileBasenameNoExtension}"
+            ]
         },
         {
             "name": "current task (debug)",
             "type": "debugpy",
             "request": "launch",
             "module": "iaa.main",
-            "args": ["--task", "${fileBasenameNoExtension}", "--debug"]
+            "args": [
+                "--task",
+                "${fileBasenameNoExtension}",
+                "--debug"
+            ]
         },
         {
             "name": "current task (justMyCode=false)",
             "type": "debugpy",
             "request": "launch",
             "module": "iaa.main",
-            "args": ["--task", "${fileBasenameNoExtension}"],
+            "args": [
+                "--task",
+                "${fileBasenameNoExtension}"
+            ],
             "justMyCode": false
         },
     ]
