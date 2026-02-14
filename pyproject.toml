@@ -29,3 +29,6 @@ dev = [
     "pyinstaller>=6.15.0",
     "click"
 ]
+
+[tool.ruff.format]
+quote-style = "single"
