@@ -2,7 +2,7 @@ from kotonebot import device, task, Loop, action
 from kotonebot import logging
 
 from iaa.config.schemas import LinkAccountOptions
-from iaa.consts import PACKAGE_NAME_JP
+from iaa.consts import package_name as get_package_name
 from iaa.context import conf
 from . import R
 from .common import go_home
@@ -32,9 +32,10 @@ def login(link_account: LinkAccountOptions):
 @task('启动游戏', screenshot_mode='manual')
 def start_game():
     d = device.of_android()
-    if d.current_package() != PACKAGE_NAME_JP:
+    package_name = get_package_name()
+    if d.current_package() != package_name:
         logger.info('Not at game. Launching...')
-        d.launch_app(PACKAGE_NAME_JP)
+        d.launch_app(package_name)
         
         # 检查是否需要登录
         link_account = conf().game.link_account

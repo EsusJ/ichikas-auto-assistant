@@ -4,7 +4,7 @@ from kotonebot import device, task, Loop, action, sleep
 
 from . import R
 from .common import go_home
-from iaa.consts import PACKAGE_NAME_JP
+from iaa.consts import package_name
 
 logger = logging.getLogger(__name__)
 WATCH_AD_WAIT_SEC = 70
@@ -130,7 +130,7 @@ def clear_common_cm():
             # 返回桌面再重新打开游戏就可以关闭广告
             d.commands.adb_shell('input keyevent KEYCODE_HOME')
             sleep(0.5)
-            d.launch_app(PACKAGE_NAME_JP)
+            d.launch_app(package_name())
             sleep(0.5)
             logger.debug('Ad skipped.')
             state = 4

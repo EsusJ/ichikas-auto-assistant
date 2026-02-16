@@ -1,3 +1,4 @@
+# ruff: noqa: E701
 from enum import Enum
 from typing import Literal
 from pydantic import BaseModel
@@ -277,7 +278,7 @@ class CustomEmulatorData(BaseModel):
 
 
 class GameConfig(BaseModel):
-    server: Literal['jp'] = 'jp'
+    server: Literal['jp', 'tw'] = 'jp'
     link_account: LinkAccountOptions = 'no'
     emulator: EmulatorOptions = 'mumu'
     control_impl: Literal['nemu_ipc', 'adb', 'uiautomator'] = 'nemu_ipc'
