@@ -35,4 +35,9 @@ quote-style = "single"
 
 [tool.kotonebot.editor]
 prefabs_module = "iaa.game_ui.elements"
-resource_path = "resources/jp"
+resource_path = "resources/"
+
+[tool.kotonebot.variant]                                                                                                                  
+names = ["jp", "tw"]                                                                                                                      
+base = "jp"                                                                                                                               
+path_pattern = "nest"
