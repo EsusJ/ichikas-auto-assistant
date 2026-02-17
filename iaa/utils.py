@@ -26,4 +26,4 @@ def sprite_path(path: str) -> str:
         return packaged_path
 
     # 兜底：包内资源（适用于以包形式安装时）
-    return str(resources.files('iaa.res.sprites') / path)
+    return str(resources.files('iaa.res') / path)

@@ -16,10 +16,11 @@ EMULATOR_DISPLAY_MAP: dict[EmulatorOptions, str] = {
 }
 EMULATOR_VALUE_MAP: dict[str, EmulatorOptions] = {v: k for k, v in EMULATOR_DISPLAY_MAP.items()}
 
-SERVER_DISPLAY_MAP: dict[Literal['jp'], str] = {
+SERVER_DISPLAY_MAP: dict[Literal['jp', 'tw'], str] = {
   'jp': '日服',
+  'tw': '台服',
 }
-SERVER_VALUE_MAP: dict[str, Literal['jp']] = {v: k for k, v in SERVER_DISPLAY_MAP.items()}
+SERVER_VALUE_MAP: dict[str, Literal['jp', 'tw']] = {v: k for k, v in SERVER_DISPLAY_MAP.items()}
 
 LINK_DISPLAY_MAP: dict[LinkAccountOptions, str] = {
   'no': '不引继账号',
@@ -131,7 +132,19 @@ def build_game_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) 
   row = tb.Frame(frame)
   row.pack(fill=tk.X, padx=8, pady=8)
   tb.Label(row, text="引继账号", width=16, anchor=tk.W).pack(side=tk.LEFT)
-  tb.Combobox(row, state="readonly", textvariable=store.link_var, values=list(LINK_VALUE_MAP.keys()), width=28).pack(side=tk.LEFT)
+  link_combobox = tb.Combobox(row, state="readonly", textvariable=store.link_var, values=list(LINK_VALUE_MAP.keys()), width=28)
+  link_combobox.pack(side=tk.LEFT)
+
+  def _update_link_account_state(*_args) -> None:
+    server_val = SERVER_VALUE_MAP.get(store.server_var.get(), 'jp')
+    if server_val == 'tw':
+      store.link_var.set(LINK_DISPLAY_MAP['no'])
+      link_combobox.configure(state="disabled")
+    else:
+      link_combobox.configure(state="readonly")
+
+  store.server_var.trace_add('write', lambda *_: _update_link_account_state())
+  _update_link_account_state()
 
   # 控制方式
   row = tb.Frame(frame)
@@ -293,7 +306,7 @@ def build_settings_tab(app: DesktopApp, parent: tk.Misc) -> None:  # noqa: ARG00
       # 游戏设置
       emulator_val = EMULATOR_VALUE_MAP[store.emulator_var.get()]
       server_val = SERVER_VALUE_MAP[store.server_var.get()]
-      link_val = LINK_VALUE_MAP[store.link_var.get()]
+      link_val = 'no' if server_val == 'tw' else LINK_VALUE_MAP[store.link_var.get()]
       control_impl_val = CONTROL_IMPL_VALUE_MAP[store.control_impl_var.get()]
       conf.game.emulator = emulator_val
       conf.game.server = server_val

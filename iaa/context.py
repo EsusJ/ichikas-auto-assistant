@@ -18,3 +18,6 @@ def conf() -> IaaConfig:
     if config is None:
         raise ContextNotInitializedError()
     return config
+
+def server():
+    return conf().game.server

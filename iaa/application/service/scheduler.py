@@ -213,7 +213,13 @@ class SchedulerService:
         self.device = device
         init_context(target_device=device)
 
+        # 初始 contextvars
+        logger.debug("Initializing configuration context...")
         init_config_context(self.iaa.config.conf)
+        server = self.iaa.config.conf.game.server
+        logger.debug("Setting game server to %s", server)
+        from iaa.tasks import R
+        R.current_variant.set(server)
 
     def _get_enabled_tasks(self) -> list[tuple[str, Callable[[], None]]]:
         """根据配置返回启用的任务列表，顺序与 REGULAR_TASKS 保持一致。"""

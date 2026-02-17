@@ -1,1 +1,20 @@
-{"definitions":{"b34e62d0-3932-4058-9927-e4bb660a1d5a":{"name":"Login.ButtonLinkByGooglePlay","displayName":"GooglePlayで連携","type":"template","annotationId":"b34e62d0-3932-4058-9927-e4bb660a1d5a","useHintRect":false}},"annotations":[{"id":"b34e62d0-3932-4058-9927-e4bb660a1d5a","type":"rect","data":{"x1":706,"y1":240,"x2":907,"y2":268}}]}
+{
+  "version": 2,
+  "definitions": {
+    "b34e62d0-3932-4058-9927-e4bb660a1d5a": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Login.ButtonLinkByGooglePlay",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 706,
+          "y1": 240,
+          "x2": 907,
+          "y2": 268
+        }
+      },
+      "displayName": "GooglePlayで連携"
+    }
+  }
+}
