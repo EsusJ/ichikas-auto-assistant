@@ -5,7 +5,6 @@ from kotonebot.util import Throttler, Countdown
 from kotonebot.backend.core import HintBox
 
 from . import R
-from ._fragments import handle_data_download
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +28,6 @@ def go_home(threshold_timeout: float = 0):
                 break
         else:
             cd.reset()
-        # 有新需要数据下载
-        if handle_data_download():
-            continue
 
         if th.request():
             device.click(1, 1)

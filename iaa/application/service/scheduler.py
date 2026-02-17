@@ -213,6 +213,13 @@ class SchedulerService:
         self.device = device
         init_context(target_device=device)
 
+        # 初始化框架全局配置
+        from kotonebot.config import conf
+        from iaa.tasks.globals import data_download
+        conf().loop.loop_callbacks = [
+            data_download,
+        ]
+
         # 初始 contextvars
         logger.debug("Initializing configuration context...")
         init_config_context(self.iaa.config.conf)
