@@ -1,10 +1,12 @@
 ﻿from typing import Callable
 
+
 from .cm import cm
 from .live import challenge_live, solo_live
 from .live.ten_songs import ten_songs
 from .start_game import start_game
 from .story.activity_story import activity_story
+from .story.main_story import farm_story
 from .gift import gift
 from .area_convos import area_convos
 
@@ -22,6 +24,7 @@ REGULAR_TASKS: TaskRegistry = {
 
 MANUAL_TASKS: TaskRegistry = {
     'ten_songs': ten_songs,
+    'main_story': farm_story,
 }
 
 
@@ -37,5 +40,6 @@ def name_from_id(task_id: str) -> str:
         'gift': '领取礼物',
         'mission': '领取任务奖励',
         'area_convos': '区域对话',
+        'main_story': '刷主线剧情',
     }
     return mapping.get(task_id, task_id)

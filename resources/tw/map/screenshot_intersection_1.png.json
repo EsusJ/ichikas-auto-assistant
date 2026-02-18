@@ -18,6 +18,12 @@
       "name": "Hud.ButtonLive",
       "variant": "tw",
       "props": {}
+    },
+    "e6e9b497-82e4-4721-8b52-cfa6c80f8cea": {
+      "type": "prefab",
+      "name": "Hud.ButtonStory",
+      "variant": "tw",
+      "props": {}
     }
   }
 }

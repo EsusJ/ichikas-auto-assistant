@@ -33,6 +33,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_run_gift = None
   btn_run_area_convos = None
   btn_run_ten_songs = None
+  btn_run_main_story = None
 
   def _on_export_report() -> None:
     try:
@@ -72,7 +73,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     # 刷新单任务运行按钮状态
     try:
       is_run_disabled = is_transition or sch.running
-      for b in (btn_run_start_game, btn_run_single_live, btn_run_challenge_live, btn_run_activity_story, btn_run_cm, btn_run_gift, btn_run_area_convos, btn_run_ten_songs):
+      for b in (btn_run_start_game, btn_run_single_live, btn_run_challenge_live, btn_run_activity_story, btn_run_cm, btn_run_gift, btn_run_area_convos, btn_run_ten_songs, btn_run_main_story):
         if b is not None:
           b.configure(state=(tk.DISABLED if is_run_disabled else tk.NORMAL))
     except Exception:
@@ -195,6 +196,20 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     sch.run_single("ten_songs", run_in_thread=True)
     _refresh_power_button()
 
+  def _on_main_story() -> None:
+    sch = app.service.scheduler
+    if sch.is_starting or sch.is_stopping:
+      return
+    confirm = messagebox.askyesno(
+      "确认开始",
+      "即将开始刷往期剧情，脚本会无限执行（即使所有剧情都已完成），需要手动停止。是否继续？",
+      parent=app.root,
+    )
+    if not confirm:
+      return
+    sch.run_single("main_story", run_in_thread=True)
+    _refresh_power_button()
+
   sep_ten_songs = tb.Separator(lf_tasks, orient=tk.HORIZONTAL)
   sep_ten_songs.grid(row=2, column=0, columnspan=13, sticky=tk.EW, padx=20, pady=(8, 0))
 
@@ -202,6 +217,11 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   lbl_ten_songs.grid(row=3, column=0, sticky=tk.W, padx=20, pady=(8, 16))
   btn_run_ten_songs = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=_on_ten_songs)  # type: ignore[call-arg]
   btn_run_ten_songs.grid(row=3, column=1, sticky=tk.W, padx=(4, 12), pady=(8, 16))
+
+  lbl_main_story = tb.Label(lf_tasks, text="刷往期剧情")
+  lbl_main_story.grid(row=4, column=0, sticky=tk.W, padx=20, pady=(0, 16))
+  btn_run_main_story = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=_on_main_story)  # type: ignore[call-arg]
+  btn_run_main_story.grid(row=4, column=1, sticky=tk.W, padx=(4, 12), pady=(0, 16))
 
   # 让容器在放大时保留边距（拉伸占位到最右侧）
   lf_tasks.grid_columnconfigure(12, weight=1)

@@ -49,7 +49,7 @@ def skip_stories(mode: SkipMode = 'skip', *, end_condition: Callable[[], bool]):
     前置：位于剧情阅读界面\n
     结束：剧情列表界面
 
-    :param mode: 跳过模式，可选值为 'skip'（跳过）, 'fast_forward'（快进）, 'read'（连点跳过）。
+    :param mode: 跳过模式，可选值为 'skip'（跳过）, 'read'（连点跳过）。
     """
     for _ in Loop(interval=0.5):
         if R.Story.ButtonStoryMenu.try_click():
@@ -60,12 +60,13 @@ def skip_stories(mode: SkipMode = 'skip', *, end_condition: Callable[[], bool]):
             if R.CommonDialog.ButtonAwardClaimedOk.try_click():
                 logger.debug('Clicked award claimed ok button.')
         elif end_condition():
-            logger.info('Skip stories finished.')
+            logger.info('Skip stories (skip mode) finished.')
             break
         else:
             # 跳过处理
             match mode:
                 case 'skip':
+                    # 跳过模式
                     if R.Story.ButtonReadNext.try_click():
                         logger.debug('Clicked read next button.')
                     elif R.Story.ButtonSkipStory.try_click():
@@ -73,6 +74,13 @@ def skip_stories(mode: SkipMode = 'skip', *, end_condition: Callable[[], bool]):
                     elif R.Story.ButtonIconSkip.try_click():
                         logger.debug('Clicked skip button.')
                 case 'read':
-                    raise NotImplementedError('Read mode is not implemented.')
+                    # 连点器模式
+                    for _ in Loop():
+                        for __ in range(10):
+                            device.click_center()
+                            sleep(0.1)
+                        if end_condition():
+                            logger.info('Skip stories (read mode) finished.')
+                            return
                 case _:
                     assert_never(mode)
