@@ -30,7 +30,7 @@ def go_home(threshold_timeout: float = 0):
             cd.reset()
 
         if th.request():
-            device.click(1, 1)
+            device.click(1, 367)
 
 def has_red_dot(box: HintBox) -> bool:
     return color.find('#ff5589', rect=box) is not None

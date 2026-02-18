@@ -5,9 +5,10 @@ from kotonebot import device, task, Loop, action, sleep
 from . import R
 from .common import go_home
 from iaa.consts import package_name
+from iaa.context import conf as get_conf
 
 logger = logging.getLogger(__name__)
-WATCH_AD_WAIT_SEC = 70
+
 
 @action('是否位于交叉路口')
 def is_at_intersection() -> bool:
@@ -103,6 +104,7 @@ def clear_common_cm():
     logger.info('Clearing CM.') 
     d = device.of_android()
     state: int = 1 # 1=开始看，2=载入，3=正在看，4=等结果
+    wait_sec = get_conf().cm.watch_ad_wait_sec
     for _ in Loop(interval=0.6):
         if state == 1:
             # 开始看
@@ -122,10 +124,10 @@ def clear_common_cm():
                 logger.debug('Loading ad...')
                 sleep(0.2)
             else:
-                logger.info(f'Ad loaded. Wait {WATCH_AD_WAIT_SEC} sec.')
+                logger.info(f'Ad loaded. Wait {wait_sec} sec.')
                 state = 3
         elif state == 3:
-            sleep(WATCH_AD_WAIT_SEC)
+            sleep(wait_sec)
             logger.debug('Wait ad finished.')
             # 返回桌面再重新打开游戏就可以关闭广告
             d.commands.adb_shell('input keyevent KEYCODE_HOME')

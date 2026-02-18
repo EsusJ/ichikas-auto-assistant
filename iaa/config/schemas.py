@@ -318,6 +318,10 @@ class ChallengeLiveConfig(BaseModel):
     award: ChallengeLiveAward = ChallengeLiveAward.Crystal
 
 
+class CmConfig(BaseModel):
+    watch_ad_wait_sec: int = 70
+
+
 class SchedulerConfig(BaseModel):
     start_game_enabled: bool = True
     solo_live_enabled: bool = True
