@@ -151,6 +151,17 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     current = _to_int(payload.get("current_steps"))
     total = _to_int(payload.get("total_steps"))
     percent = _to_int(payload.get("percent"))
+
+    run_total_tasks = _to_int(payload.get("run_total_tasks"))
+    run_completed_tasks = _to_int(payload.get("run_completed_tasks"))
+    if run_total_tasks is not None and run_total_tasks > 0 and run_completed_tasks is not None:
+      completed = max(0, min(run_total_tasks, run_completed_tasks))
+      task_progress = 0
+      if percent is not None:
+        task_progress = max(0, min(100, percent))
+      # 全任务进度 = 已完成任务 + 当前任务内部进度，避免多任务时进度条反复归零
+      percent = int(((completed + (task_progress / 100.0)) / run_total_tasks) * 100)
+
     if percent is None and current is not None and total is not None and total > 0:
       percent = int(current * 100 / total)
     if event.type == "task_started" and percent is None:

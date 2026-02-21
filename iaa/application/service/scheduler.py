@@ -75,7 +75,8 @@ class SchedulerService:
                 self.__running = True
                 # 启动阶段结束
                 self.is_starting = False
-                for task_id, func in tasks:
+                total_tasks = len(tasks)
+                for index, (task_id, func) in enumerate(tasks):
                     self.current_task_id = task_id
                     self.current_task_name = name_from_id(task_id)
                     task_name = self.current_task_name
@@ -86,7 +87,12 @@ class SchedulerService:
                             task_name=task_name,
                             timestamp=time.time(),
                             type='task_started',
-                            payload={'message': '开始执行'},
+                            payload={
+                                'message': '开始执行',
+                                'run_total_tasks': total_tasks,
+                                'run_completed_tasks': index,
+                                'run_current_task_index': index + 1,
+                            },
                         )
                     )
                     token = set_task_reporter(
@@ -108,7 +114,13 @@ class SchedulerService:
                                 task_name=task_name,
                                 timestamp=time.time(),
                                 type='task_finished',
-                                payload={'message': '执行完成', 'percent': 100},
+                                payload={
+                                    'message': '执行完成',
+                                    'percent': 100,
+                                    'run_total_tasks': total_tasks,
+                                    'run_completed_tasks': index + 1,
+                                    'run_current_task_index': index + 1,
+                                },
                             )
                         )
                     except KeyboardInterrupt:
@@ -119,7 +131,13 @@ class SchedulerService:
                                 task_name=task_name,
                                 timestamp=time.time(),
                                 type='task_failed',
-                                payload={'message': f'任务中断：{task_name}', 'error': 'KeyboardInterrupt'},
+                                payload={
+                                    'message': f'任务中断：{task_name}',
+                                    'error': 'KeyboardInterrupt',
+                                    'run_total_tasks': total_tasks,
+                                    'run_completed_tasks': index,
+                                    'run_current_task_index': index + 1,
+                                },
                             )
                         )
                         logger.info("KeyboardInterrupt received. Stopping scheduler.")
@@ -132,7 +150,13 @@ class SchedulerService:
                                 task_name=task_name,
                                 timestamp=time.time(),
                                 type='task_failed',
-                                payload={'message': f'执行失败：{task_name}', 'error': str(e)},
+                                payload={
+                                    'message': f'执行失败：{task_name}',
+                                    'error': str(e),
+                                    'run_total_tasks': total_tasks,
+                                    'run_completed_tasks': index,
+                                    'run_current_task_index': index + 1,
+                                },
                             )
                         )
                         logger.exception(f"Task '{task_id}' raised an exception: {e}")
