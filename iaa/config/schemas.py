@@ -282,7 +282,7 @@ class CustomEmulatorData(BaseModel):
 class GameConfig(BaseModel):
     server: Literal['jp', 'tw'] = 'jp'
     link_account: LinkAccountOptions = 'no'
-    emulator: EmulatorOptions = 'mumu'
+    emulator: EmulatorOptions = 'mumu_v5'
     control_impl: Literal['nemu_ipc', 'adb', 'uiautomator'] = 'nemu_ipc'
     check_emulator: bool = False
     emulator_data: CustomEmulatorData | None = None
