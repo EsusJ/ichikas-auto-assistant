@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "definitions": {
+    "38019b8c-dc1a-45bb-8b4e-68533f92c583": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.TextLevelUpBouns",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 474.666666666667,
+          "y1": 504.124782197618,
+          "x2": 688.666666666667,
+          "y2": 531.433215880582
+        },
+        "fixed": true
+      },
+      "variant_inherit": false,
+      "displayName": "升级时的演出能量文本"
+    }
+  }
+}

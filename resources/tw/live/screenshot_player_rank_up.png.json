@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "definitions": {
+    "38019b8c-dc1a-45bb-8b4e-68533f92c583": {
+      "type": "prefab",
+      "name": "Live.TextLevelUpBouns",
+      "variant": "tw",
+      "props": {}
+    }
+  }
+}

@@ -179,6 +179,14 @@ def start_auto_live(
             elif R.Live.TextScoreRankReward.exists():
                 if R.Live.ButtonCloseScoreRankReward.try_click():
                     logger.debug('Clicked claim score rank reward button.')
+            # 处理 RANK UP 升级
+            elif R.Live.TextLevelUpBouns.exists():
+                _skip()
+                logger.debug('Skip RANK UP bonus screen finished.')
+            # RANK UP 升级后的奖励获得提示
+            elif R.Cm.TextAwardClaimed.exists():
+                _skip()
+                logger.debug('Skip RANK UP bonus reward claimed screen finished.')
             else:
                 logger.debug('Waiting for reward screen finished.')
     return True
