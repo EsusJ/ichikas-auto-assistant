@@ -38,3 +38,19 @@ def go_home(threshold_timeout: float = 0):
 
 def has_red_dot(box: HintBox) -> bool:
     return color.find('#ff5589', rect=box) is not None
+
+def hanlde_tip_dialog() -> bool:
+    """处理提示对话框。
+    类似于第一次进入活动时的说明对话框。
+
+    :return: 如果处理了提示对话框，则返回 True；否则返回 False。
+    """
+    if btn := (
+        R.CommonDialog.ButtonTipDialogNext.find()
+        or R.CommonDialog.ButtonTipDialogClose.find()
+    ):
+        btn.click()
+        logger.info('Tip dialog found (button %s) and clicked.', str(btn.prefab))
+        return True
+    return False
+    

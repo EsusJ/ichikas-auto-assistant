@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "definitions": {
+    "a28c6154-ae09-4481-ad79-0e5bbf9ed103": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "CommonDialog.ButtonTipDialogClose",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 912.5560931630355,
+          "y1": 649.2404135690692,
+          "x2": 1007.2217580766343,
+          "y2": 683.7694110975093
+        },
+        "fixed": true
+      },
+      "variant_inherit": false
+    }
+  }
+}

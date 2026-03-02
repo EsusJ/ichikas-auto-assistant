@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "definitions": {
+    "e0351492-58ef-47f7-9221-9d9c4eed715c": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "CommonDialog.ButtonTipDialogNext",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 916.6326443176383,
+          "y1": 648.7418590339506,
+          "x2": 1002.9407082228608,
+          "y2": 682.861421809089
+        },
+        "fixed": true
+      },
+      "variant_inherit": false
+    }
+  }
+}
