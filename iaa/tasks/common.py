@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 @action('是否位于首页')
 def at_home() -> bool:
-    return R.Hud.IconCrystal.find() is not None
+    return R.Hud.ButtonLive.find() is not None
 
 @action('返回首页', screenshot_mode='manual')
 def go_home(threshold_timeout: float = 0):

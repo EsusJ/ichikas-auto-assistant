@@ -45,7 +45,7 @@ def start_auto_live(
         * `None`: 不自动演出
     :param back_to: 返回位置。\n
         * `"home"`: 返回首页
-        * `"select"`: 返回选歌界面
+        * `"select"`: 返回选歌界面（已弃用，仅保留兼容）
         * `None`: 不返回，直接在 LIVE CLEAR 或「已完成指定次数的演出」画面结束
     :param finish_pre_check:
         结束演出时的额外处理，在检查循环的开始处调用。返回 `(should_skip, should_break)`。
@@ -59,6 +59,10 @@ def start_auto_live(
         raise NotImplementedError('Not implemented yet.')
     rep = task_reporter()
     rep.message('准备开始演出')
+    if back_to == 'select':
+        logger.warning(
+            "back_to='select' is deprecated; prefer back_to='home' and re-enter song select manually."
+        )
     # 等待进入编队界面
     check = AnyOf[
         R.Live.SwitchAutoLiveOff,
@@ -225,24 +229,26 @@ def solo_live(
     if loop_count is not None and loop_count <= 0:
         raise ValueError('loop_count must be positive.')
     reporter = task_reporter()
-    reporter.message('进入单人演出')
-    # 进入单人演出
-    for _ in Loop(interval=0.6):
-        if R.Hud.ButtonLive.find(threshold=0.55):
-            device.click()
-            logger.debug('Clicked home LIVE button.')
-            sleep(1)
-        elif R.Live.ButtonSoloLive.try_click():
-            logger.debug('Clicked SoloLive button.')
-        elif at_song_select():
-            logger.debug('Now at song select.')
-            break
+    def enter_solo_song_select():
+        reporter.message('进入单人演出')
+        # 进入单人演出
+        for _ in Loop(interval=0.6):
+            if R.Hud.ButtonLive.find(threshold=0.55):
+                device.click()
+                logger.debug('Clicked home LIVE button.')
+                sleep(1)
+            elif R.Live.ButtonSoloLive.try_click():
+                logger.debug('Clicked SoloLive button.')
+            elif at_song_select():
+                logger.debug('Now at song select.')
+                break
     
     count = 0
     max_count = loop_count or float('inf')
     match songs:
         case None:
             with reporter.phase('单次演出', total=1) as phase:
+                enter_solo_song_select()
                 enter_unit_select()
                 start_auto_live('once', back_to='home')
                 phase.step('单次演出完成')
@@ -251,6 +257,7 @@ def solo_live(
             # 游戏内 AUTO
             if auto_mode == 'game':
                 reporter.message('开始单曲循环（游戏自动）')
+                enter_solo_song_select()
                 enter_unit_select()
                 start_auto_live('all', back_to='home')
                 reporter.message('单曲循环完成，返回首页')
@@ -261,15 +268,15 @@ def solo_live(
                 reporter.message('开始单曲循环（脚本自动）')
                 with reporter.phase('单曲循环', total=total) as phase:
                     while True:
+                        enter_solo_song_select()
                         enter_unit_select()
-                        if not start_auto_live('script', back_to='select', debug_enabled=debug_enabled):
+                        if not start_auto_live('script', back_to='home', debug_enabled=debug_enabled):
                             break
                         count += 1
                         phase.step(f'已完成 {count} 次单曲循环')
                         if count >= max_count:
                             logger.info(f'Completed {count} loops.')
                             break
-                go_home()
                 reporter.message('单曲循环完成，返回首页')
         # 列表循环
         case 'list-loop':
@@ -277,11 +284,12 @@ def solo_live(
             reporter.message('开始列表循环')
             with reporter.phase('列表循环', total=total) as phase:
                 for _ in Loop():
+                    enter_solo_song_select()
                     next_song()
                     enter_unit_select()
                     start_auto_live(
                         'once' if auto_mode == 'game' else 'script',
-                        back_to='select',
+                        back_to='home',
                         debug_enabled=debug_enabled,
                     )
                     count += 1
