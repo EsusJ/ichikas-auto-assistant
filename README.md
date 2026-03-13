@@ -53,7 +53,17 @@
 uv sync
 uv pip install -e .
 uv run tools/make_resources.py
-uv run iaa/main.py
+uv run python -m iaa.main
+# 查看可用任务
+uv run python -m iaa.main list tasks
+# 按配置执行常规任务
+uv run python -m iaa.main run
+# 显式执行一个或多个任务
+uv run python -m iaa.main invoke start_game solo_live
+# 执行单个任务
+uv run python -m iaa.main invoke main_story
+# 带参数执行自动演出
+uv run python -m iaa.main invoke auto_live --count-mode specify --count 10 --loop-mode list --auto-mode game_auto
 ```
 
 ## 开发
@@ -70,6 +80,11 @@ uv run launch_desktop.py
 ```
 
 （后续文档暂时可以参考 琴音小助手 的开发文档）
+
+## 打包
+执行 `just build` 后，`dist_app` 目录中会同时包含：
+* `iaa.exe`：GUI 入口
+* `iaa-cli.exe`：CLI 入口
 
 ## 贡献
 TODO

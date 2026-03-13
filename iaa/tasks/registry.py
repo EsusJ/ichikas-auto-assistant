@@ -1,6 +1,9 @@
 ﻿from typing import Callable
 
 
+from dataclasses import dataclass
+from typing import Literal
+
 from .cm import cm
 from .live import challenge_live, solo_live
 from .start_game import start_game
@@ -11,6 +14,14 @@ from .area_convos import area_convos
 from .live.auto_live import auto_live
 
 TaskRegistry = dict[str, Callable[[], None]]
+
+
+@dataclass(frozen=True)
+class TaskInfo:
+    task_id: str
+    display_name: str
+    kind: Literal['regular', 'manual']
+    supports_kwargs: bool = False
 
 REGULAR_TASKS: TaskRegistry = {
     'start_game': start_game,
@@ -43,3 +54,21 @@ def name_from_id(task_id: str) -> str:
         'auto_live': '自动演出',
     }
     return mapping.get(task_id, task_id)
+
+
+TASK_INFOS: dict[str, TaskInfo] = {
+    'start_game': TaskInfo('start_game', '启动游戏', 'regular'),
+    'cm': TaskInfo('cm', '自动 CM', 'regular'),
+    'solo_live': TaskInfo('solo_live', '单人演出', 'regular'),
+    'challenge_live': TaskInfo('challenge_live', '挑战演出', 'regular'),
+    'activity_story': TaskInfo('activity_story', '活动剧情', 'regular'),
+    'gift': TaskInfo('gift', '领取礼物', 'regular'),
+    'area_convos': TaskInfo('area_convos', '区域对话', 'regular'),
+    'main_story': TaskInfo('main_story', '刷主线剧情', 'manual'),
+    'auto_live': TaskInfo('auto_live', '自动演出', 'manual', supports_kwargs=True),
+}
+
+
+def list_task_infos() -> list[TaskInfo]:
+    ordered_ids = [*REGULAR_TASKS.keys(), *MANUAL_TASKS.keys()]
+    return [TASK_INFOS[task_id] for task_id in ordered_ids]
