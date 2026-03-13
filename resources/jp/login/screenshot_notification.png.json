@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "definitions": {
+    "ac6f1577-9a32-4eb8-8fd9-cfd2ce716919": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Login.IconNotification",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 140,
+          "y1": 21.178063668242743,
+          "x2": 173,
+          "y2": 59.14344708114365
+        },
+        "fixed": true
+      },
+      "variant_inherit": true,
+      "displayName": "通知弹窗 左上角图标"
+    }
+  }
+}

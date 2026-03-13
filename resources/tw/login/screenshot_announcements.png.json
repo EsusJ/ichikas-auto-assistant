@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "definitions": {
+    "acf65aeb-f7d4-4e8e-b97a-f1914cd90c98": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Login.TextSekaiAnnouncements",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 36,
+          "y1": 150.2345433629834,
+          "x2": 242,
+          "y2": 196.1926390733371
+        },
+        "fixed": true
+      },
+      "variant_inherit": true,
+      "displayName": "通知弹窗 SEKAI Announcements"
+    }
+  }
+}
