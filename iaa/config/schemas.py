@@ -319,6 +319,7 @@ class LiveConfig(BaseModel):
     """
     指定次数。
     """
+    auto_set_unit: bool = False
     fully_deplete: bool = False
 
 

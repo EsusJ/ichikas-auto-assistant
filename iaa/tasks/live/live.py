@@ -32,6 +32,8 @@ def start_auto_live(
     back_to: Literal['home'] | Literal['select'] | None = 'home',
     finish_pre_check: Callable[[], tuple[bool, bool]] | None = None,
     debug_enabled: bool = False,
+    auto_set_unit: bool = False,
+    ap_multiplier: int | None = None,
 ) -> bool:
     """
     前置：位于编队界面\n
@@ -52,6 +54,9 @@ def start_auto_live(
         * `should_skip`: 如果 True，则跳过当前循环。
         * `should_break`: 如果 True，则结束循环。
         如果 `should_skip` 为 True，则 `should_break` 会被忽略。
+    :param debug_enabled: 是否启用调试模式，启用后会在自动演出时显示更多日志，并在脚本自动演出时显示节奏游戏分析器的调试信息。
+    :param auto_set_unit: 是否在演出前自动编队
+    :param ap_multiplier: AP 倍率，范围 [0, 10]。若为数字，表示演出前自动设置倍率为对应值；若为 None，表示保持现状。
     :raises NotImplementedError: 如果未实现的功能被调用。
     :return: 若为 False，表示因为 AP 不足没有进行演出。
     """
@@ -113,6 +118,29 @@ def start_auto_live(
     elif auto_setting == 'script':
         # 先关掉游戏 AUTO
         _turn_off_auto()
+    
+    # 自动编队
+    if auto_set_unit:
+        logger.info('Auto setting unit.')
+        rep.message('自动编队中')
+        # 首先打开自动编队
+        for _ in Loop():
+            if R.Live.AutoSetDialog.TextEventMember.find():
+                logger.debug('Auto set unit dialog opened.')
+                sleep(0.3)
+                break
+            elif R.Live.ButtonSetRecommendUnit.try_click():
+                logger.debug('Clicked auto set unit button.')
+        # 然后编队
+        R.Live.AutoSetDialog.TextRecommend.wait().click()
+        sleep(0.3)
+        logger.debug('Clicking イベントメンバー button.')
+        R.Live.AutoSetDialog.TextEventMember.wait().click()
+        sleep(0.3)
+        logger.debug('Clicked あすすめ button.')
+        R.Live.AutoSetDialog.ButtonConfirm.wait().click()
+        sleep(0.3)
+        logger.debug('Closed auto set unit dialog.')
     logger.info('Auto live setting finished.')
     rep.message('演出中')
 
@@ -229,6 +257,7 @@ def solo_live(
     if loop_count is not None and loop_count <= 0:
         raise ValueError('loop_count must be positive.')
     reporter = task_reporter()
+    auto_set_unit = conf().live.auto_set_unit
     def enter_solo_song_select():
         reporter.message('进入单人演出')
         # 进入单人演出
@@ -250,7 +279,7 @@ def solo_live(
             with reporter.phase('单次演出', total=1) as phase:
                 enter_solo_song_select()
                 enter_unit_select()
-                start_auto_live('once', back_to='home')
+                start_auto_live('once', back_to='home', auto_set_unit=auto_set_unit)
                 phase.step('单次演出完成')
         # 单曲循环
         case 'single-loop':
@@ -259,7 +288,7 @@ def solo_live(
                 reporter.message('开始单曲循环（游戏自动）')
                 enter_solo_song_select()
                 enter_unit_select()
-                start_auto_live('all', back_to='home')
+                start_auto_live('all', back_to='home', auto_set_unit=auto_set_unit)
                 reporter.message('单曲循环完成，返回首页')
             # 脚本自动
             else:
@@ -270,7 +299,7 @@ def solo_live(
                     while True:
                         enter_solo_song_select()
                         enter_unit_select()
-                        if not start_auto_live('script', back_to='home', debug_enabled=debug_enabled):
+                        if not start_auto_live('script', back_to='home', debug_enabled=debug_enabled, auto_set_unit=auto_set_unit):
                             break
                         count += 1
                         phase.step(f'已完成 {count} 次单曲循环')
@@ -291,6 +320,7 @@ def solo_live(
                         'once' if auto_mode == 'game' else 'script',
                         back_to='home',
                         debug_enabled=debug_enabled,
+                        auto_set_unit=auto_set_unit,
                     )
                     count += 1
                     logger.info(f'Song looped. {count}/{max_count}')
@@ -438,6 +468,6 @@ def challenge_live(
                 return True, False
         return False, False
     rep.message('开始挑战演出')
-    start_auto_live('once', finish_pre_check=claim_reward)
+    start_auto_live('once', finish_pre_check=claim_reward, auto_set_unit=conf().live.auto_set_unit)
     rep.message('挑战演出完成，返回首页')
     go_home()

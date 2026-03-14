@@ -45,6 +45,23 @@
         }
       },
       "displayName": "自动演出 ON"
+    },
+    "c4eb4872-6d30-4804-8594-9b98a9add2da": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.ButtonSetRecommendUnit",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 600,
+          "y1": 89.65593718630979,
+          "x2": 745,
+          "y2": 119.63670223195328
+        },
+        "fixed": true
+      },
+      "variant_inherit": false,
+      "displayName": "おすすめ編成"
     }
   }
 }
