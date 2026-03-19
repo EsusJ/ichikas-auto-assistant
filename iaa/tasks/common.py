@@ -4,7 +4,7 @@ from kotonebot import device, Loop, action, color
 from kotonebot.util import Throttler, Countdown
 
 from . import R
-from iaa.context import task_reporter
+from iaa.context import task_reporter, server
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def go_home(threshold_timeout: float = 0):
     th = Throttler(1)
     cd = Countdown(threshold_timeout)
     for _ in Loop():
-        if R.Hud.ButtonLive.find():
+        if R.Hud.ButtonLive.find() or (server() == 'tw' and R.Hud.ButtonLiveTwEvent.find()):
             logger.debug('Live button found.')
             break
         elif R.Hud.ButtonGoBack.try_click():
