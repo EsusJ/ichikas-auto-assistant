@@ -1,0 +1,4 @@
+interface:
+  display_name: "IAA Task Integration"
+  short_description: "Wire new IAA tasks into config and GUI."
+  default_prompt: "Use $iaa-task-integration to add a new IAA task by wiring config, registry, scheduler toggles, and desktop GUI without implementing the task logic itself."
