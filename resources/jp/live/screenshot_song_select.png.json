@@ -78,6 +78,23 @@
         }
       },
       "displayName": "随机歌曲按钮 位置"
+    },
+    "d95e210c-1094-4873-9551-0f25dc586a7d": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.SongSelect.IconSearch",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 592.3653050227907,
+          "y1": 27.467376711679947,
+          "x2": 625.0208216374721,
+          "y2": 58.395046554710675
+        },
+        "fixed": true
+      },
+      "variant_inherit": true,
+      "displayName": "歌曲选择页面 搜索图标"
     }
   }
 }

@@ -7,7 +7,7 @@ from kotonebot import device, Loop, action, sleep, color, ocr
 
 from .. import R
 from ..common import at_home, go_home
-from iaa.context import conf, server, task_reporter
+from iaa.context import conf, server, task_reporter, keyboard
 from ._select_song import next_song
 from ._scene import at_song_select
 from .auto_live_core import RhythmGameAnalyzer
@@ -25,6 +25,20 @@ def _skip():
     else:
         raise NotImplementedError(f'Unsupported server: {server()}')
 
+
+def select_song(song_name: str):
+    kbd = keyboard()
+    for _ in Loop():
+        if kbd.can_input():
+            break
+        elif R.Live.SongSelect.IconSearch.try_click():
+            sleep(0.5)
+        elif R.Live.SongSelect.ButtonClearSearch.try_click():
+            sleep(0.5)
+    kbd.send(song_name)
+    sleep(0.2)
+    kbd.enter()
+    sleep(0.5)
 
 @action('演出', screenshot_mode='manual')
 def start_auto_live(
@@ -295,6 +309,7 @@ def solo_live(
     auto_mode: Literal['script'] | Literal['game'] = 'game',
     debug_enabled: bool = False,
     ap_multiplier: int | None = None,
+    song_name: str | None = None,
 ):
     """
     
@@ -333,6 +348,8 @@ def solo_live(
         case None:
             with reporter.phase('单次演出', total=1) as phase:
                 enter_solo_song_select()
+                if song_name:
+                    select_song(song_name)
                 enter_unit_select()
                 start_auto_live('once', back_to='home', auto_set_unit=auto_set_unit, ap_multiplier=ap_multiplier)
                 phase.step('单次演出完成')
@@ -342,6 +359,8 @@ def solo_live(
             if auto_mode == 'game':
                 reporter.message('开始单曲循环（游戏自动）')
                 enter_solo_song_select()
+                if song_name:
+                    select_song(song_name)
                 enter_unit_select()
                 start_auto_live('all', back_to='home', auto_set_unit=auto_set_unit, ap_multiplier=ap_multiplier)
                 reporter.message('单曲循环完成，返回首页')
@@ -353,6 +372,8 @@ def solo_live(
                 with reporter.phase('单曲循环', total=total) as phase:
                     while True:
                         enter_solo_song_select()
+                        if song_name:
+                            select_song(song_name)
                         enter_unit_select()
                         if not start_auto_live(
                             'script',

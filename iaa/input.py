@@ -1,10 +1,11 @@
 import base64
-import os
+import logging
 
 from kotonebot import device, sleep
 
 from .utils import asset_path
 
+logger = logging.getLogger(__name__)
 ADB_KEYBOARD_PKG = 'com.android.adbkeyboard'
 ADB_KEYBOARD_ACTIVITY = 'com.android.adbkeyboard/.AdbIME'
 
@@ -60,3 +61,19 @@ class AdbKeyboardInput:
     def clear(self):
         self.select_all()
         self.backspace()
+
+    def can_input(self) -> bool | None:
+        """判断当前是否处于可输入状态（聚焦于输入框）。
+
+        :return: 布尔值表示，是否可输入。若无法判断，返回 None。
+        """
+        d = device.of_android()
+        ret = d.commands.adb_shell('dumpsys input_method | grep mServedInputConnection')
+        ret = ret.strip()
+        if ret == 'mServedInputConnectionWrapper=null':
+            return False
+        elif ret.startswith('mServedInputConnectionWrapper='):
+            return True
+        else:
+            logger.warning(f"Unexpected output from dumpsys input_method: {ret}")
+            return None

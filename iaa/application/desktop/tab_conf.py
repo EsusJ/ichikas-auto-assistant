@@ -85,12 +85,25 @@ class ConfStore:
     self.challenge_award_var = tk.StringVar()
     # 分组多选组件实例
     self.challenge_select: Optional[AdvanceSelect[GameCharacter]] = None
-    # 映射表（仅用于歌曲选择）
-    self.song_display_to_value: dict[str, int] = {}
     # 奖励显示到值映射
     self.challenge_award_display_to_value: dict[str, ChallengeLiveAward] = {}
     # CM 设置
     self.cm_watch_ad_wait_sec_var = tk.StringVar()
+
+
+SONG_KEEP_UNCHANGED = '保持不变'
+SONG_NAME_OPTIONS = [
+  SONG_KEEP_UNCHANGED,
+  'メルト',
+  '独りんぼエンヴィー',
+]
+
+
+def normalize_song_name_input(value: str) -> str | None:
+  normalized = (value or '').strip()
+  if not normalized or normalized == SONG_KEEP_UNCHANGED:
+    return None
+  return normalized
 
 
 def build_game_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) -> None:
@@ -308,27 +321,16 @@ def build_live_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) 
   frame = tb.Labelframe(parent, text="演出设置")
   frame.pack(fill=tk.X, padx=16, pady=8)
 
-  # 歌曲映射
-  song_value_to_display = {
-    -1: '保持不变',
-    1: 'Tell Your World｜Tell Your World',
-    47: 'メルト｜Melt',
-    74: '独りんぼエンヴィー｜孑然妒火',
-  }
-  store.song_display_to_value = {v: k for k, v in song_value_to_display.items()}
-
-  song_id = conf.live.song_id
-  current_song_display = song_value_to_display[song_id] if isinstance(song_id, int) and song_id in song_value_to_display else '保持不变'
-  store.song_var.set(current_song_display)
+  store.song_var.set(conf.live.song_name or SONG_KEEP_UNCHANGED)
   store.auto_set_unit_var.set(bool(conf.live.auto_set_unit))
   store.ap_multiplier_var.set('保持现状' if conf.live.ap_multiplier is None else str(conf.live.ap_multiplier))
   store.fully_deplete_var.set(bool(conf.live.fully_deplete))
 
-  # 歌曲下拉
+  # 歌曲名称
   row = tb.Frame(frame)
   row.pack(fill=tk.X, padx=8, pady=8)
-  tb.Label(row, text="歌曲", width=16, anchor=tk.W).pack(side=tk.LEFT)
-  tb.Combobox(row, state="disabled", textvariable=store.song_var, values=list(store.song_display_to_value.keys()), width=28).pack(side=tk.LEFT)
+  tb.Label(row, text="歌曲名称", width=16, anchor=tk.W).pack(side=tk.LEFT)
+  tb.Combobox(row, textvariable=store.song_var, values=SONG_NAME_OPTIONS, width=28).pack(side=tk.LEFT)
 
   row = tb.Frame(frame)
   row.pack(fill=tk.X, padx=8, pady=8)
@@ -518,8 +520,7 @@ def build_settings_tab(app: DesktopApp, parent: tk.Misc) -> None:  # noqa: ARG00
         conf.game.emulator_data = None
 
       # 演出设置
-      song_display = store.song_var.get()
-      conf.live.song_id = store.song_display_to_value.get(song_display, -1)
+      conf.live.song_name = normalize_song_name_input(store.song_var.get())
       conf.live.auto_set_unit = bool(store.auto_set_unit_var.get())
       ap_multiplier_display = store.ap_multiplier_var.get()
       conf.live.ap_multiplier = None if ap_multiplier_display == '保持现状' else int(ap_multiplier_display)

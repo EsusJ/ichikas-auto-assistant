@@ -15,6 +15,7 @@ def auto_live(
     auto_mode: Literal['none', 'game_auto', 'script_auto'] = 'game_auto',
     debug_enabled: bool = False,
     ap_multiplier: int | None = None,
+    song_name: str | None = None,
 ) -> None:
     reporter = task_reporter()
     reporter.message('准备自动演出参数')
@@ -40,4 +41,5 @@ def auto_live(
         auto_mode=inner_auto_mode,
         debug_enabled=debug_enabled,
         ap_multiplier=ap_multiplier,
+        song_name=song_name,
     )

@@ -306,7 +306,7 @@ class GameConfig(BaseModel):
 class LiveConfig(BaseModel):
     enabled: bool = False
     mode: Literal['auto'] = 'auto'
-    song_id: int = -1
+    song_name: str | None = None
     count_mode: Literal['once', 'all', 'specify'] = 'all'
     """
     演出次数模式。

@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "definitions": {
+    "c5936026-6dd4-416d-8cf4-7392772c06fa": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.SongSelect.ButtonClearSearch",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 593.770900533557,
+          "y1": 27.252418879678622,
+          "x2": 626.5420801350672,
+          "y2": 55.368482373342914
+        },
+        "fixed": true
+      },
+      "variant_inherit": true,
+      "displayName": "歌曲选择页面 清空搜索按钮"
+    }
+  }
+}

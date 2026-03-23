@@ -8,6 +8,7 @@ import os
 import shutil
 
 from .index import DesktopApp
+from .tab_conf import SONG_KEEP_UNCHANGED, SONG_NAME_OPTIONS, normalize_song_name_input
 from iaa.context import hub as progress_hub
 from iaa.progress import TaskProgressEvent
 
@@ -350,6 +351,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     ap_multiplier_var = tk.StringVar(
       value=("保持现状" if conf.live.ap_multiplier is None else str(conf.live.ap_multiplier))
     )
+    song_name_var = tk.StringVar(value=(conf.live.song_name or SONG_KEEP_UNCHANGED))
+    last_single_song_name = {"value": song_name_var.get()}
 
     def _center_window() -> None:
       win.update_idletasks()
@@ -419,22 +422,15 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     tb.Radiobutton(row_loop, text="单曲循环", value="single", variable=loop_mode_var).pack(side=tk.LEFT, padx=(8, 12))
     tb.Radiobutton(row_loop, text="列表循环", value="list", variable=loop_mode_var).pack(side=tk.LEFT)
 
-    row_song = tb.Frame(body)
-    row_song.grid(row=4, column=0, sticky=tk.W, pady=(0, 10))
-    tb.Label(row_song, text="演出歌曲：", width=8, anchor=tk.W).pack(side=tk.LEFT)
-    cmb_song = tb.Combobox(row_song, values=["当前选中歌曲"], state="disabled", width=24)
-    cmb_song.set("当前选中歌曲")
-    cmb_song.pack(side=tk.LEFT, padx=(8, 0))
-
     row_auto = tb.Frame(body)
-    row_auto.grid(row=5, column=0, sticky=tk.W, pady=(0, 10))
+    row_auto.grid(row=4, column=0, sticky=tk.W, pady=(0, 10))
     tb.Label(row_auto, text="自动模式：", width=8, anchor=tk.W).pack(side=tk.LEFT)
     tb.Radiobutton(row_auto, text="无", value="none", variable=auto_mode_var).pack(side=tk.LEFT, padx=(8, 12))
     tb.Radiobutton(row_auto, text="游戏自动", value="game_auto", variable=auto_mode_var).pack(side=tk.LEFT, padx=(0, 12))
     tb.Radiobutton(row_auto, text="脚本自动", value="script_auto", variable=auto_mode_var).pack(side=tk.LEFT)
 
     row_ap = tb.Frame(body)
-    row_ap.grid(row=6, column=0, sticky=tk.W, pady=(0, 12))
+    row_ap.grid(row=5, column=0, sticky=tk.W, pady=(0, 10))
     tb.Label(row_ap, text="AP 倍率：", width=8, anchor=tk.W).pack(side=tk.LEFT)
     cmb_ap_multiplier = tb.Combobox(
       row_ap,
@@ -444,6 +440,17 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
       width=24,
     )
     cmb_ap_multiplier.pack(side=tk.LEFT, padx=(8, 0))
+
+    row_song = tb.Frame(body)
+    row_song.grid(row=6, column=0, sticky=tk.W, pady=(0, 12))
+    tb.Label(row_song, text="歌曲名称：", width=8, anchor=tk.W).pack(side=tk.LEFT)
+    cmb_song_name = tb.Combobox(
+      row_song,
+      textvariable=song_name_var,
+      values=SONG_NAME_OPTIONS,
+      width=24,
+    )
+    cmb_song_name.pack(side=tk.LEFT, padx=(8, 0))
 
     row_debug = tb.Frame(body)
     row_debug.grid(row=7, column=0, sticky=tk.W, pady=(0, 12))
@@ -457,6 +464,18 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
         ent_count.configure(state=tk.NORMAL)
       else:
         ent_count.configure(state=tk.DISABLED)
+
+    def _sync_loop_mode_state(*_args) -> None:
+      if loop_mode_var.get() == "list":
+        current_song_name = song_name_var.get().strip()
+        if current_song_name:
+          last_single_song_name["value"] = current_song_name
+        song_name_var.set("")
+        cmb_song_name.configure(state="disabled")
+      else:
+        if not song_name_var.get().strip():
+          song_name_var.set(last_single_song_name["value"] or SONG_KEEP_UNCHANGED)
+        cmb_song_name.configure(state="normal")
 
     last_auto_mode = auto_mode_var.get()
 
@@ -477,6 +496,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
       last_auto_mode = current
 
     auto_mode_var.trace_add("write", _on_auto_mode_change)
+    loop_mode_var.trace_add("write", _sync_loop_mode_state)
 
     def _on_start() -> None:
       count: int | None = None
@@ -497,6 +517,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
         ),
         "debug_enabled": bool(debug_enabled_var.get()),
         "ap_multiplier": (None if ap_multiplier_var.get() == "保持现状" else int(ap_multiplier_var.get())),
+        "song_name": normalize_song_name_input(song_name_var.get()),
       }
       win.destroy()
       sch.run_single("auto_live", run_in_thread=True, kwargs=kwargs)
@@ -506,6 +527,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     tb.Button(btn_bar, text="取消", command=win.destroy).pack(side=tk.LEFT)
 
     _sync_count_state()
+    _sync_loop_mode_state()
     _on_auto_mode_change()
     _center_window()
 

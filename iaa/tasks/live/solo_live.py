@@ -12,6 +12,7 @@ def solo_live():
         'single-loop',
         auto_mode='game',
         ap_multiplier=conf().live.ap_multiplier,
+        song_name=conf().live.song_name,
     )
     # if not do_solo_live('single-loop'):
     #     return
