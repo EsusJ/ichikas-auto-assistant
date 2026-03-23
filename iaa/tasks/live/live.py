@@ -17,7 +17,8 @@ from iaa.config.schemas import ChallengeLiveAward, GameCharacter
 logger = logging.getLogger(__name__)
 LiveMode = Literal['all'] | Literal['once'] | Literal['script'] | int | None
 SoloPlayMode = Literal['game_auto', 'script_auto']
-SongChoiceMode = Literal['current', 'specified']
+SongChoiceMode = Literal['current', 'specified', 'random']
+LoopSongMode = Literal['list_next', 'random']
 PrefabClass = TypeVar('PrefabClass', bound=Prefab)
 ChallengeCharacterPrefab = tuple[PrefabClass, PrefabClass | None]
 
@@ -46,6 +47,8 @@ class SingleLoopPlan(LivePlan):
 @dataclass
 class ListLoopPlan(LivePlan):
     loop_count: int | None = None
+    loop_song_mode: LoopSongMode = 'list_next'
+
 
 CHARACTER_PREFABS: dict[GameCharacter, ChallengeCharacterPrefab] = {
     GameCharacter.Miku: (R.Live.ChallengeLive.CharaMiku, R.Live.ChallengeLive.GroupVirtualSinger),
@@ -371,6 +374,12 @@ def _prepare_solo_live(song_select_mode: SongChoiceMode | Literal['list_next'], 
         if not song_name:
             raise ValueError('song_name is required when song_select_mode is specified.')
         select_song(song_name)
+    elif song_select_mode == 'random':
+        # 点一下随机按钮
+        R.Live.SongSelect.ButtonRandom.wait().click()
+        sleep(1)
+        # 然后等歌曲稳定
+        R.Live.SongSelect.TextVo.wait()
     elif song_select_mode == 'list_next':
         next_song()
     enter_unit_select()
@@ -528,7 +537,7 @@ def solo_live(plan: OncePlan | SingleLoopPlan | ListLoopPlan):
         reporter.message('开始列表循环')
         with reporter.phase('列表循环', total=total) as phase:
             for _ in Loop():
-                _prepare_solo_live('list_next', None)
+                _prepare_solo_live(plan.loop_song_mode, None)
                 start_auto_live(
                     'once' if plan.play_mode == 'game_auto' else 'script',
                     return_to='home',

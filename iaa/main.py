@@ -40,9 +40,9 @@ def add_auto_live_args(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         '--cycle-mode',
-        choices=['single', 'list'],
+        choices=['single', 'list', 'random'],
         default='list',
-        help='auto_live only: loop current song or cycle the song list',
+        help='auto_live only: loop current song, cycle the song list, or use random song selection',
     )
     parser.add_argument(
         '--play-mode',

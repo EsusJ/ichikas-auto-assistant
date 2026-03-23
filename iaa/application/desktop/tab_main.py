@@ -420,7 +420,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     row_loop.grid(row=3, column=0, sticky=tk.W, pady=(0, 10))
     tb.Label(row_loop, text="循环模式：", width=8, anchor=tk.W).pack(side=tk.LEFT)
     tb.Radiobutton(row_loop, text="单曲循环", value="single", variable=loop_mode_var).pack(side=tk.LEFT, padx=(8, 12))
-    tb.Radiobutton(row_loop, text="列表循环", value="list", variable=loop_mode_var).pack(side=tk.LEFT)
+    tb.Radiobutton(row_loop, text="列表顺序", value="list", variable=loop_mode_var).pack(side=tk.LEFT, padx=(0, 12))
+    tb.Radiobutton(row_loop, text="列表随机", value="random", variable=loop_mode_var).pack(side=tk.LEFT)
 
     row_auto = tb.Frame(body)
     row_auto.grid(row=4, column=0, sticky=tk.W, pady=(0, 10))
@@ -465,7 +466,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
         ent_count.configure(state=tk.DISABLED)
 
     def _sync_loop_mode_state(*_args) -> None:
-      if loop_mode_var.get() == "list":
+      if loop_mode_var.get() in ("list", "random"):
         current_song_name = song_name_var.get().strip()
         if current_song_name:
           last_single_song_name["value"] = current_song_name
@@ -507,7 +508,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
         count = int(value)
       kwargs = {
         "run_count": (count if count_mode_var.get() == "specify" else None),
-        "cycle_mode": ("single" if loop_mode_var.get() == "single" else "list"),
+        "cycle_mode": loop_mode_var.get(),
         "play_mode": ("script_auto" if auto_mode_var.get() == "script_auto" else "game_auto"),
         "debug_enabled": bool(debug_enabled_var.get()),
         "ap_multiplier": (None if ap_multiplier_var.get() == "保持现状" else int(ap_multiplier_var.get())),

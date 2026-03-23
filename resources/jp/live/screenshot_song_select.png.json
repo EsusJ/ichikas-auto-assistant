@@ -67,18 +67,6 @@
       },
       "displayName": "选歌页面搜索框 位置"
     },
-    "fbe75727-58a4-436f-936f-48add3f0fa41": {
-      "type": "hint-point",
-      "name": "Live.PointRandomSong",
-      "props": {
-        "point": {
-          "kind": "point",
-          "x": 941,
-          "y": 650
-        }
-      },
-      "displayName": "随机歌曲按钮 位置"
-    },
     "d95e210c-1094-4873-9551-0f25dc586a7d": {
       "type": "prefab",
       "prefab_id": "TemplateMatchPrefab",
@@ -95,6 +83,40 @@
       },
       "variant_inherit": true,
       "displayName": "歌曲选择页面 搜索图标"
+    },
+    "73c78678-59c9-4d6b-80ff-6c887f7cbaa1": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.SongSelect.TextVo",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 818.4005601874057,
+          "y1": 395.99724992860894,
+          "x2": 859.7228742369925,
+          "y2": 424.5182039171294
+        },
+        "fixed": true
+      },
+      "variant_inherit": true,
+      "displayName": "歌曲选择 Vo."
+    },
+    "7c27897f-70c5-4d24-a0af-95be8d45b5a9": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.SongSelect.ButtonRandom",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 915.3201695037092,
+          "y1": 625.0681092877312,
+          "x2": 966.4095759650165,
+          "y2": 673.8539516365162
+        },
+        "fixed": true
+      },
+      "variant_inherit": true,
+      "displayName": "歌曲选择 随机按钮"
     }
   }
 }

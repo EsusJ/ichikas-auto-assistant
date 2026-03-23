@@ -10,7 +10,7 @@ from .live import ListLoopPlan, SingleLoopPlan, solo_live as do_solo_live
 @task('自动演出')
 def auto_live(
     run_count: int | None = 10,
-    cycle_mode: Literal['single', 'list'] = 'list',
+    cycle_mode: Literal['single', 'list', 'random'] = 'list',
     play_mode: Literal['game_auto', 'script_auto'] = 'game_auto',
     debug_enabled: bool = False,
     ap_multiplier: int | None = None,
@@ -35,7 +35,16 @@ def auto_live(
             auto_set_unit=conf().live.auto_set_unit,
             song_select_mode='specified' if song_name else 'current',
         )
-    else:
+    elif cycle_mode == 'random':
+        plan = ListLoopPlan(
+            loop_count=run_count,
+            play_mode=play_mode,
+            debug_enabled=debug_enabled,
+            ap_multiplier=ap_multiplier,
+            auto_set_unit=conf().live.auto_set_unit,
+            loop_song_mode='random',
+        )
+    elif cycle_mode == 'list':
         plan = ListLoopPlan(
             loop_count=run_count,
             play_mode=play_mode,
