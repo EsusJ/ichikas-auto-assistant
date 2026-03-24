@@ -102,13 +102,14 @@ def select_song(song_name: str):
     kbd = keyboard()
     for _ in Loop():
         if kbd.can_input():
+            sleep(0.5)
             break
         elif R.Live.SongSelect.IconSearch.try_click():
             sleep(0.5)
         elif R.Live.SongSelect.ButtonClearSearch.try_click():
             sleep(0.5)
     kbd.send(song_name)
-    sleep(0.2)
+    sleep(0.5)
     kbd.enter()
     sleep(0.5)
 
@@ -494,10 +495,8 @@ def solo_live(plan: OncePlan | SingleLoopPlan | ListLoopPlan):
     auto_set_unit = plan.auto_set_unit
     count = 0
     if isinstance(plan, OncePlan):
-        with reporter.phase('单次演出', total=1) as phase:
-            _prepare_solo_live(plan.song_select_mode, plan.song_name)
-            start_auto_live('once', return_to='home', auto_set_unit=auto_set_unit, ap_multiplier=plan.ap_multiplier)
-            phase.step('单次演出完成')
+        _prepare_solo_live(plan.song_select_mode, plan.song_name)
+        start_auto_live('once', return_to='home', auto_set_unit=auto_set_unit, ap_multiplier=plan.ap_multiplier)
         return
     if isinstance(plan, SingleLoopPlan):
         # 单曲循环

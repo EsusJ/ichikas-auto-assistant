@@ -323,7 +323,10 @@ class LiveConfig(BaseModel):
     """演出前是否自动编队"""
     ap_multiplier: int | None = 10
     """AP 倍率。None 表示保持现状。"""
-    fully_deplete: bool = False
+    append_fc: bool = False
+    """是否在常规演出后追加一次 Full Combo 演出。"""
+    prepend_random: bool = False
+    """是否在常规演出前追加一首随机歌曲。"""
 
 
 class ChallengeLiveConfig(BaseModel):

@@ -79,7 +79,8 @@ class ConfStore:
     self.song_var = tk.StringVar()
     self.auto_set_unit_var = tk.BooleanVar()
     self.ap_multiplier_var = tk.StringVar()
-    self.fully_deplete_var = tk.BooleanVar()
+    self.append_fc_var = tk.BooleanVar()
+    self.append_random_var = tk.BooleanVar()
     # 挑战演出设置
     self.challenge_char_vars: dict[GameCharacter, tk.BooleanVar] = {}
     self.challenge_award_var = tk.StringVar()
@@ -324,7 +325,8 @@ def build_live_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) 
   store.song_var.set(conf.live.song_name or SONG_KEEP_UNCHANGED)
   store.auto_set_unit_var.set(bool(conf.live.auto_set_unit))
   store.ap_multiplier_var.set('保持现状' if conf.live.ap_multiplier is None else str(conf.live.ap_multiplier))
-  store.fully_deplete_var.set(bool(conf.live.fully_deplete))
+  store.append_fc_var.set(bool(conf.live.append_fc))
+  store.append_random_var.set(bool(conf.live.prepend_random))
 
   # 歌曲名称
   row = tb.Frame(frame)
@@ -348,10 +350,13 @@ def build_live_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) 
   row.pack(fill=tk.X, padx=8, pady=8)
   tb.Checkbutton(row, text="自动编队", variable=store.auto_set_unit_var).pack(side=tk.LEFT)
 
-  # 完全清空体力
   row = tb.Frame(frame)
   row.pack(fill=tk.X, padx=8, pady=8)
-  tb.Checkbutton(row, text="完全清空体力", variable=store.fully_deplete_var).pack(side=tk.LEFT)
+  tb.Checkbutton(row, text="追加一次 FullCombo 演出", variable=store.append_fc_var).pack(side=tk.LEFT)
+
+  row = tb.Frame(frame)
+  row.pack(fill=tk.X, padx=8, pady=8)
+  tb.Checkbutton(row, text="追加一首随机歌曲", variable=store.append_random_var).pack(side=tk.LEFT)
 
 
 def build_challenge_live_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) -> None:
@@ -524,7 +529,8 @@ def build_settings_tab(app: DesktopApp, parent: tk.Misc) -> None:  # noqa: ARG00
       conf.live.auto_set_unit = bool(store.auto_set_unit_var.get())
       ap_multiplier_display = store.ap_multiplier_var.get()
       conf.live.ap_multiplier = None if ap_multiplier_display == '保持现状' else int(ap_multiplier_display)
-      conf.live.fully_deplete = bool(store.fully_deplete_var.get())
+      conf.live.append_fc = bool(store.append_fc_var.get())
+      conf.live.prepend_random = bool(store.append_random_var.get())
 
       # 挑战演出设置
       selected_chars: list[GameCharacter] = store.challenge_select.get() if store.challenge_select else []
