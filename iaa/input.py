@@ -28,6 +28,8 @@ def install_apk(apk_path: str):
 class AdbKeyboardInput:
     def __init__(self) -> None:
         self._checked = False
+        self._active = False
+        self._ime_restore: str | None = None
 
     def _check(self):
         d = device.of_android()
@@ -36,18 +38,33 @@ class AdbKeyboardInput:
             sleep(1)
         if not check_installed(ADB_KEYBOARD_PKG):
             raise RuntimeError("Failed to install ADB Keyboard.")
-    
-    def send(self, text: str):
+
+    def __enter__(self):
+        if self._active:
+            raise RuntimeError("Nested `with` is not allowed for AdbKeyboardInput.")
         self._check()
         c = device.of_android().commands
-        old_ime = c.adb_shell('settings get secure default_input_method').strip()
-        try:
-            c.adb_shell(f'ime enable {ADB_KEYBOARD_ACTIVITY}')
-            c.adb_shell(f'ime set {ADB_KEYBOARD_ACTIVITY}')
-            encoded_text = base64.b64encode(text.encode('utf-8')).decode('utf-8')
-            c.adb_shell(f'am broadcast -a ADB_INPUT_B64 --es msg "{encoded_text}"')
-        finally:
-            c.adb_shell(f'ime set {old_ime}')
+        get_ime = lambda: c.adb_shell('settings get secure default_input_method').strip() # noqa: E731
+        self._ime_restore = get_ime()
+        c.adb_shell(f'ime enable {ADB_KEYBOARD_ACTIVITY}')
+        c.adb_shell(f'ime set {ADB_KEYBOARD_ACTIVITY}')
+        sleep(0.7) # 等待 AdbKeyboard 启动
+        self._active = True
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        if not self._active:
+            return
+        c = device.of_android().commands
+        if self._ime_restore:
+            c.adb_shell(f'ime set {self._ime_restore}')
+            self._ime_restore = None
+        self._active = False
+
+    def send(self, text: str):
+        c = device.of_android().commands
+        encoded_text = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+        c.adb_shell(f'am broadcast -a ADB_INPUT_B64 --es msg "{encoded_text}"')
 
     def enter(self):
         device.of_android().commands.adb_shell('input keyevent 66')

@@ -108,9 +108,10 @@ def select_song(song_name: str):
             sleep(0.5)
         elif R.Live.SongSelect.ButtonClearSearch.try_click():
             sleep(0.5)
-    kbd.send(song_name)
-    sleep(0.5)
-    kbd.enter()
+    with kbd:
+        kbd.send(song_name)
+        sleep(0.2)
+        kbd.enter()
     sleep(0.5)
 
 def _configure_ap_multiplier(ap_multiplier: int) -> None:
