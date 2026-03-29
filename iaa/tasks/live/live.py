@@ -233,7 +233,7 @@ def _configure_unit() -> None:
     rep.message('自动编队中')
     # 首先打开自动编队
     for _ in Loop():
-        if R.Live.AutoSetDialog.TextEventMember.find():
+        if R.Live.AutoSetDialog.TextUnitRecommend.find():
             logger.debug('Auto set unit dialog opened.')
             sleep(0.3)
             break
@@ -243,7 +243,14 @@ def _configure_unit() -> None:
     R.Live.AutoSetDialog.TextRecommend.wait().click()
     sleep(0.3)
     logger.debug('Clicking イベントメンバー button.')
-    R.Live.AutoSetDialog.TextEventMember.wait().click()
+    for _ in Loop():
+        btn = (
+            R.Live.AutoSetDialog.TextEventMember.find() or
+            R.Live.AutoSetDialog.TextUnitRecommend.find()
+        )
+        if btn:
+            btn.click()
+            break
     sleep(0.3)
     logger.debug('Clicked あすすめ button.')
     R.Live.AutoSetDialog.ButtonConfirm.wait().click()

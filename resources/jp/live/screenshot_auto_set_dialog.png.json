@@ -57,6 +57,24 @@
       "variant_policy": {
         "tw": "require"
       }
+    },
+    "9dd57d2f-2810-4caf-878e-eb7d70438211": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.AutoSetDialog.TextUnitRecommend",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 348.40522439831363,
+          "y1": 105.51647465840881,
+          "x2": 445.3896952879022,
+          "y2": 150.4707520042624
+        },
+        "fixed": true
+      },
+      "variant_policy": {
+        "tw": "require"
+      }
     }
   }
 }
