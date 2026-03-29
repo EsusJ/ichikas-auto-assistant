@@ -344,7 +344,7 @@ wheels = [
 
 [[package]]
 name = "ichikas-auto-assistant"
-version = "26.3b2"
+version = "26.3b3"
 source = { virtual = "." }
 dependencies = [
     { name = "kotonebot", extra = ["android"] },
@@ -368,8 +368,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "kotonebot", extras = ["android"], marker = "sys_platform != 'win32'", specifier = "==0.11.0" },
-    { name = "kotonebot", extras = ["android", "windows"], marker = "sys_platform == 'win32'", specifier = "==0.11.0" },
+    { name = "kotonebot", extras = ["android"], marker = "sys_platform != 'win32'", specifier = "==0.12.0" },
+    { name = "kotonebot", extras = ["android", "windows"], marker = "sys_platform == 'win32'", specifier = "==0.12.0" },
     { name = "numpy", specifier = "<2.0" },
     { name = "onnxruntime", marker = "sys_platform == 'linux' or sys_platform == 'win32'", specifier = "==1.14.0" },
     { name = "onnxruntime", marker = "sys_platform != 'win32'" },
@@ -497,7 +497,7 @@ wheels = [
 
 [[package]]
 name = "kotonebot"
-version = "0.11.0"
+version = "0.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ksaa-res" },
@@ -513,9 +513,9 @@ dependencies = [
     { name = "thefuzz" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/23/29/647d7bebd78fa03e56abb36b3832d771da83fb070241a96835bc96ba3e79/kotonebot-0.11.0.tar.gz", hash = "sha256:5f256e5fada8f63f13ba1548dbd338c84c96ec63baca4c9f8d2736cd89ef23bb", size = 1557892, upload-time = "2026-03-25T02:11:24.243Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/44/a9e014729a612ec7a8ba2a270fdd65d0945f6fcf9e07a5a0996e65042a12/kotonebot-0.12.0.tar.gz", hash = "sha256:ed49113abd23e43a5da436f6778f8d1ee51c0df09b5abadef6ddcf830adbd4dc", size = 1585317, upload-time = "2026-03-29T07:05:25.375Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4e/be/1e82f7ef9a7f6a7d73ab76005ee55efd704ad89d063a6a303091d6ffebe5/kotonebot-0.11.0-py3-none-any.whl", hash = "sha256:2efc9400d9b7c35ed7b14c364a3caa989f5a291cc6bd7da5ae6e59b634f6d1ff", size = 1606164, upload-time = "2026-03-25T02:11:21.201Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/a2/6e0d1d10aa74bc20111e58c5e716ab32adc6ea553eff438cffc5a0204017/kotonebot-0.12.0-py3-none-any.whl", hash = "sha256:8fb91099cf44083bdef149f3ae9c06340ce55d36dfbe0311c4081321dccb014f", size = 1633779, upload-time = "2026-03-29T07:05:21.594Z" },
 ]
 
 [package.optional-dependencies]
@@ -597,7 +597,7 @@ name = "macholib"
 version = "1.16.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "altgraph", marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
+    { name = "altgraph", marker = "sys_platform == 'darwin'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/95/ee/af1a3842bdd5902ce133bd246eb7ffd4375c38642aeb5dc0ae3a0329dfa2/macholib-1.16.3.tar.gz", hash = "sha256:07ae9e15e8e4cd9a788013d81f5908b3609aa76f9b1421bae9c4d7606ec86a30", size = 59309, upload-time = "2023-09-25T09:10:16.155Z" }
 wheels = [
