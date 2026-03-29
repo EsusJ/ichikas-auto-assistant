@@ -17,18 +17,13 @@ def go_home(threshold_timeout: float = 0):
     rep = task_reporter()
     rep.message('正在返回首页')
     logger.info('Try to go home.')
-    th = Throttler(1)
-    cd = Countdown(threshold_timeout)
-    for _ in Loop():
+    for _ in Loop(interval=0.5):
         if R.Hud.ButtonLive.find() or (server() == 'tw' and R.Hud.ButtonLiveTwEvent.find()):
             logger.debug('Live button found.')
             break
         elif R.Hud.ButtonGoBack.try_click():
             logger.debug('Go back button found and clicked.')
         else:
-            cd.reset()
-
-        if th.request():
             device.click(1, 367)
 
 def has_red_dot(box: HintBox) -> bool:
