@@ -74,7 +74,14 @@ def _match_item(item: ListViewItem, targets: list[ShopItem]) -> ShopItem | None:
             scale = max(template_width / icon_width, template_height / icon_height)
             icon_image = cv2.resize(icon_image, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
 
-        if image.find(icon_image, template, threshold=0.8):
+        # ret = image.find(icon_image, template, threshold=0)
+        # logger.debug("Match: %s confidence=%.2f", target.display(server()), ret.score if ret else -1)
+        # cv2.imshow('icon_image', icon_image)
+        # cv2.imshow('template', template)
+        # cv2.waitKey(0)
+
+        # 由于不同服务器右下角文本字体不一致，这里调低阈值
+        if image.find(icon_image, template, threshold=0.5):
             return target
     return None
 
@@ -170,6 +177,7 @@ def _purchase(item: ListViewItem):
 def event_shop() -> None:
     rep = task_reporter()
     targets = list(get_conf().event_shop.purchase_items)
+    all_items = list(ShopItem)
     
     goto_event_shop()
     view = R.Shop.EventShopListView.require()
@@ -181,13 +189,17 @@ def event_shop() -> None:
     remaining = set(targets)
     available_targets: set[ShopItem] = set()
     for item in view.walk(reset_to_top=False):
-        matched_item = _match_item(item, list(remaining))
+        # 按 remaining 更高效，但是为了调试方便，按 all_items 来
+        # matched_item = _match_item(item, list(remaining))
+        matched_item = _match_item(item, all_items)
         if matched_item is None:
+            logger.warning("Item %d does not match any target", item.index)
             continue
+        logger.debug("Matched item %s", matched_item.display(server()))
         available_targets.add(matched_item)
         remaining.discard(matched_item)
-        if not remaining:
-            break
+        # if not remaining:
+        #     break
     purchasable_targets = [target for target in targets if target in available_targets]
 
     for target in targets:
@@ -200,7 +212,7 @@ def event_shop() -> None:
 
     with rep.phase('购买商品', total=len(purchasable_targets)) as phase:
         for target in purchasable_targets:
-            phase.step(target.display('cn'))
+            phase.step(target.display(server()))
             view.scrollable.to_top()
 
             for item in view.walk(reset_to_top=False):
