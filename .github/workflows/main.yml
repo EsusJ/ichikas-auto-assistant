@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Generate resources
+        run: uv run python tools/make_resources.py
+
       - name: Build executable
         run: uv run python build.py build  # <--- 注意这里在末尾加了 build
 
