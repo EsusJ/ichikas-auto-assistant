@@ -19,7 +19,7 @@ jobs:
           version: "latest"
 
       - name: Set up Python
-        run: uv python install 3.11 # 建议根据 pyproject.toml 中的要求指定版本
+        run: uv python install 3.10 # 建议根据 pyproject.toml 中的要求指定版本
 
       - name: Install dependencies
         run: uv sync
