@@ -27,10 +27,10 @@ jobs:
         run: uv sync
 
       - name: Build executable
-        run: uv run python build.py
+        run: uv run python build.py build  # <--- 注意这里在末尾加了 build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: iaa-windows-build-0329
-          path: dist/ # 编译好的成品会打包在这里
+          path: dist_app/                  # <--- 注意这里改成 dist_app/
