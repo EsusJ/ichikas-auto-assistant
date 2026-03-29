@@ -1,0 +1,34 @@
+name: Build Application
+
+on:
+  push:
+    branches: [ "main" ] # 或者你当前的分支名
+  workflow_dispatch:     # 允许手动在 Actions 页面触发
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.11 # 建议根据 pyproject.toml 中的要求指定版本
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Build executable
+        run: uv run python build.py
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iaa-windows-build
+          path: dist/ # build.py 通常会将打包好的文件放在 dist 目录下
