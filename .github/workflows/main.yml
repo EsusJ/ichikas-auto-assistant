@@ -1,0 +1,36 @@
+name: Build Application (0329 Branch)
+
+on:
+  push:
+    branches: [ "0329" ] # 专门监听 0329 分支的推送
+  workflow_dispatch:     # 依然保留手动触发的按钮
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # 默认会 check out 触发该 action 的分支，也就是 0329
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        # 明确指定使用 3.10 版本，解决 onnxruntime 的依赖报错
+        run: uv python install 3.10 
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Build executable
+        run: uv run python build.py
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iaa-windows-build-0329
+          path: dist/ # 编译好的成品会打包在这里
