@@ -1,8 +1,11 @@
+import logging
+
 import cv2
 from kotonebot import device, sleep
 
 from . import R
 
+logger = logging.getLogger(__name__)
 
 def handle_data_download():
     """
@@ -14,10 +17,24 @@ def handle_data_download():
     :return: 是否处理了数据下载对话框
     """
     if R.CommonDialog.TextRecommendDownloadViaWifi.find():
+        logger.debug('Data download dialog found.')
         if R.CommonDialog.ButtonDownload.click():
+            logger.debug('Clicked Download button.')
             return True
     return False
 
+def handle_notification():
+    if R.Login.IconNotification.find():
+        device.click(0, 0)  # 点击空白处关闭通知
+        logger.debug('Notification found and closed.')
+        return True
+    # 台服、国服特有弹窗
+    if R.Login.TextSekaiAnnouncements.find():
+        logger.debug('Announcement dialog found.')
+        if R.Hud.ButtonGoBack.try_click():
+            logger.debug('Clicked go back button to close announcement dialog.')
+            return True
+    return False
 
 def scan_area(*, step_scale: float = 0.1, max_swipes: int = -1):
     # 先重置场景，往左滑动

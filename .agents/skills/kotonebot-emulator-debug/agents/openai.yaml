@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kotonebot Emulator Debug"
+  short_description: "Drive MuMu and debug live kotonebot UI."
+  default_prompt: "Use this skill to connect to MuMu through kotonebot, write one-off probe scripts, capture raw and annotated screenshots, and debug live UI automation behavior on real pages."

@@ -1,10 +1,9 @@
 from kotonebot import action, task, Loop, device, sleep
 from kotonebot import logging
 
-from iaa.tasks.common import has_red_dot, go_home
+from iaa.tasks.common import hanlde_tip_dialog, has_red_dot, go_home
 
 from .. import R
-from .._fragments import handle_data_download
 from ._common import enter_story, skip_stories
 
 logger = logging.getLogger(__name__)
@@ -21,11 +20,14 @@ def go_activity_story():
     """
     go_home()
     for _ in Loop():
-        # 新开活动，第一次进入，会弹出数据下载
-        if handle_data_download():
-            # 第一次进入会自动阅读第一话
-            skip_stories(mode='skip', end_condition=at_story_list)
+        # 新开活动，第一次进入会自动阅读第一话
+        if R.Story.ButtonStoryMenu.exists():
+            skip_stories(mode='skip', end_condition=R.Hud.ButtonGoBack.exists)
             continue
+        # 自动阅读第一话后会弹出说明提示
+        if hanlde_tip_dialog():
+            continue
+
         if R.Hud.ButtonLive.try_click():
             logger.debug('Clicked live button.')
             sleep(0.4)
