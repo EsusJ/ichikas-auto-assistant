@@ -279,6 +279,9 @@ def _wait_live_end(live_mode: LiveMode) -> None:
     is_mutiple_auto = (live_mode == 'all' or isinstance(live_mode, int))
     for _ in Loop():
         # 结束条件
+        
+
+        
         if is_mutiple_auto:
             # 指定演出次数或直到 AP 不足
             # 结束条件是「已完成指定次数的演出」提示
@@ -301,6 +304,17 @@ def _wait_live_end(live_mode: LiveMode) -> None:
 def _settle_to_home() -> bool:
     if at_home():
         return True
+
+    # === 【新增逻辑】检测结算过程中是否断线回到了标题界面 ===
+    if R.Login.ButtonMenu.exists():
+        logger.warning('Disconnected during settlement, returning to title.')
+        task_reporter().message('结算时掉线，正在重新进入游戏...')
+        
+        # 自动进入游戏并点掉登录弹窗，回到真正的首页面
+        go_home() 
+        return True # 既然 go_home 执行完毕，说明我们已经在主界面了，直接返回 True 让外层的 _finish_live 结束循环
+    # =======================================================
+    
     # 台服要点 OK 才行
     if server() == 'tw' and R.Live.ButtonLiveCompletedOk.try_click():
         logger.debug('Clicked live completed ok button.')
