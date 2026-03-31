@@ -375,6 +375,11 @@ def _enter_song_select() -> None:
             device.click()
             logger.debug('Clicked home LIVE button.')
             sleep(1)
+        elif R.Live.ButtonSoloLive.try_click():
+            logger.debug('Clicked SoloLive button.')
+        elif at_song_select():
+            logger.debug('Now at song select.')
+            break
         # === 【新增逻辑】插在这里：每次循环第一步，先检测是否断线回到了标题界面 ===
         # 使用你在 screenshot_title.png.json 里定义的 Login.ButtonMenu 特征
         elif R.Login.ButtonMenu.exists():
@@ -383,11 +388,6 @@ def _enter_song_select() -> None:
             from ..common import go_home # 确保引入了 go_home
             go_home() 
         # =======================================================
-        elif R.Live.ButtonSoloLive.try_click():
-            logger.debug('Clicked SoloLive button.')
-        elif at_song_select():
-            logger.debug('Now at song select.')
-            break
 
 
 def _prepare_solo_live(song_select_mode: SongChoiceMode | Literal['list_next'], song_name: str | None) -> None:
