@@ -377,7 +377,7 @@ def _enter_song_select() -> None:
             sleep(1)
         # === 【新增逻辑】插在这里：每次循环第一步，先检测是否断线回到了标题界面 ===
         # 使用你在 screenshot_title.png.json 里定义的 Login.ButtonMenu 特征
-        if R.Login.ButtonMenu.exists():
+        elif R.Login.ButtonMenu.exists():
             logger.warning('Disconnected during settlement, returning to title.')
             # 自动进入游戏并点掉登录弹窗，回到真正的首页面
             from ..common import go_home # 确保引入了 go_home
