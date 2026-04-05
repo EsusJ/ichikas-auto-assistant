@@ -74,9 +74,9 @@ def _setup_resolution(
         logger.debug('Current resolution is already %s, skip.', TARGET_RESOLUTION)
         return None
     
-    device.commands.adb_shell(f'am force-stop {package_name}')
-    logger.info('Killed game package: %s', package_name)
-    time.sleep(1)
+    # device.commands.adb_shell(f'am force-stop {package_name}')
+    # logger.info('Killed game package: %s', package_name)
+    # time.sleep(1)
 
     device.commands.adb_shell(f'wm size {TARGET_RESOLUTION}')
     logger.info('Set resolution from %s to %s', original, TARGET_RESOLUTION)
@@ -478,10 +478,15 @@ class SchedulerService:
                 raise ValueError('physical_android 模式下 emulator_data 必须是 PhysicalAndroidData。')
             adb_serial = (data.adb_serial or '').strip()
             if not adb_serial:
-                raise ValueError('物理设备模式下必须提供 ADB 序列号。')
-            usb_host = PhysicalAndroidHost.query(id=adb_serial)
-            if usb_host is None:
-                raise ValueError(f'找不到 ADB USB 设备: {adb_serial}')
+                devices = PhysicalAndroidHost.list()
+                if not devices:
+                    raise ValueError('未找到任何 USB 设备。请连接设备后重试。')
+                usb_host = devices[0]
+                logger.info('自动选择 USB 设备: %s', usb_host.id)
+            else:
+                usb_host = PhysicalAndroidHost.query(id=adb_serial)
+                if usb_host is None:
+                    raise ValueError(f'找不到 ADB USB 设备: {adb_serial}')
             if not usb_host.running():
                 raise ValueError(f'ADB USB 设备不可用: {adb_serial}')
             if impl == 'adb':

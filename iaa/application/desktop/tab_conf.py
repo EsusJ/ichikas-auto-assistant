@@ -92,6 +92,7 @@ class ConfStore:
     # 物理设备设置
     self.physical_android_serial_var = tk.StringVar()
     self.physical_android_serial_row: Optional[tb.Frame] = None
+    self.physical_android_hint_row: Optional[tb.Frame] = None
     # Scrcpy 设置
     self.scrcpy_virtual_display_var = tk.BooleanVar()
     self.scrcpy_virtual_display_row: Optional[tb.Frame] = None
@@ -224,6 +225,9 @@ def build_game_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore, 
   store.physical_android_serial_row = physical_android_serial_row
   tb.Label(physical_android_serial_row, text="ADB 序列号", width=16, anchor=tk.W).pack(side=tk.LEFT)
   tb.Entry(physical_android_serial_row, textvariable=store.physical_android_serial_var, width=30).pack(side=tk.LEFT)
+  physical_android_hint_row = tb.Frame(frame)
+  store.physical_android_hint_row = physical_android_hint_row
+  tb.Label(physical_android_hint_row, text="留空自动选择第一个 USB 设备", anchor=tk.W, foreground='gray').pack(side=tk.LEFT, padx=(128, 0))
 
   mumu_instance_row = tb.Frame(frame)
   store.mumu_instance_row = mumu_instance_row
@@ -335,9 +339,13 @@ def build_game_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore, 
     if emu_val == 'physical_android':
       if store.physical_android_serial_row:
         store.physical_android_serial_row.pack(fill=tk.X, padx=8, pady=8)
+      if store.physical_android_hint_row:
+        store.physical_android_hint_row.pack(fill=tk.X, padx=8, pady=(0, 8))
     else:
       if store.physical_android_serial_row:
         store.physical_android_serial_row.pack_forget()
+      if store.physical_android_hint_row:
+        store.physical_android_hint_row.pack_forget()
 
     if emu_val == 'custom':
       if store.custom_ip_row:
@@ -664,8 +672,6 @@ def build_settings_tab(app: DesktopApp, parent: tk.Misc) -> None:  # noqa: ARG00
         )
       elif emulator_val == 'physical_android':
         serial = (store.physical_android_serial_var.get() or '').strip()
-        if not serial:
-          raise ValueError("物理设备模式下必须填写 ADB 序列号")
         conf.game.emulator_data = PhysicalAndroidData(adb_serial=serial)
       else:
         conf.game.emulator_data = None
