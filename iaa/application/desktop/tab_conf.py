@@ -28,9 +28,10 @@ EMULATOR_DISPLAY_MAP: dict[EmulatorOptions, str] = {
 }
 EMULATOR_VALUE_MAP: dict[str, EmulatorOptions] = {v: k for k, v in EMULATOR_DISPLAY_MAP.items()}
 
-SERVER_DISPLAY_MAP: dict[Literal['jp', 'tw'], str] = {
+SERVER_DISPLAY_MAP: dict[Literal['jp', 'tw', 'cn'], str] = {
   'jp': '日服',
   'tw': '台服',
+  'cn': '国服',
 }
 SERVER_VALUE_MAP: dict[str, Literal['jp', 'tw']] = {v: k for k, v in SERVER_DISPLAY_MAP.items()}
 

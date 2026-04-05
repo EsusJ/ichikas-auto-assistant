@@ -43,6 +43,6 @@ prefabs_module = "iaa.game_ui.elements"
 resource_path = "resources/"
 
 [tool.kotonebot.variant]                                                                                                                  
-variants = ["tw"]
+variants = ["tw", "cn"]
 base = "jp"
 path_pattern = "nest"
