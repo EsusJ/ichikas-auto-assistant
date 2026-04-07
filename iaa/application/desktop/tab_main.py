@@ -8,6 +8,7 @@ import os
 import shutil
 
 from .index import DesktopApp
+from .tab_conf import SONG_KEEP_UNCHANGED, SONG_NAME_OPTIONS, normalize_song_name_input
 from iaa.context import hub as progress_hub
 from iaa.progress import TaskProgressEvent
 
@@ -33,6 +34,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_run_cm = None
   btn_run_gift = None
   btn_run_area_convos = None
+  btn_run_event_shop = None
+  btn_run_mission_rewards = None
   btn_run_ten_songs = None
   btn_run_main_story = None
 
@@ -100,7 +103,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     # 刷新单任务运行按钮状态
     try:
       is_run_disabled = is_transition or sch.running
-      for b in (btn_run_start_game, btn_run_single_live, btn_run_challenge_live, btn_run_activity_story, btn_run_cm, btn_run_gift, btn_run_area_convos, btn_run_ten_songs, btn_run_main_story):
+      for b in (btn_run_start_game, btn_run_single_live, btn_run_challenge_live, btn_run_activity_story, btn_run_cm, btn_run_gift, btn_run_area_convos, btn_run_event_shop, btn_run_mission_rewards, btn_run_ten_songs, btn_run_main_story):
         if b is not None:
           b.configure(state=(tk.DISABLED if is_run_disabled else tk.NORMAL))
     except Exception:
@@ -256,6 +259,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   var_auto_cm = tk.BooleanVar(value=bool(conf.scheduler.cm_enabled))
   var_gift = tk.BooleanVar(value=bool(getattr(conf.scheduler, 'gift_enabled', True)))
   var_area_convos = tk.BooleanVar(value=bool(getattr(conf.scheduler, 'area_convos_enabled', True)))
+  var_event_shop = tk.BooleanVar(value=bool(getattr(conf.scheduler, 'event_shop_enabled', True)))
+  var_mission_rewards = tk.BooleanVar(value=bool(getattr(conf.scheduler, 'mission_rewards_enabled', True)))
   app.store.var_start_game = var_start_game
   app.store.var_single_live = var_single_live
   app.store.var_challenge_live = var_challenge_live
@@ -263,6 +268,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   app.store.var_auto_cm = var_auto_cm
   app.store.var_gift = var_gift
   app.store.var_area_convos = var_area_convos
+  app.store.var_event_shop = var_event_shop
+  app.store.var_mission_rewards = var_mission_rewards
 
   def _save_scheduler() -> None:
     conf.scheduler.start_game_enabled = bool(var_start_game.get())
@@ -272,6 +279,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     conf.scheduler.cm_enabled = bool(var_auto_cm.get())
     conf.scheduler.gift_enabled = bool(var_gift.get())
     conf.scheduler.area_convos_enabled = bool(var_area_convos.get())
+    conf.scheduler.event_shop_enabled = bool(var_event_shop.get())
+    conf.scheduler.mission_rewards_enabled = bool(var_mission_rewards.get())
     app.service.config.save()
 
   def _on_run(task_id: str) -> None:
@@ -288,6 +297,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   cb_cm = tb.Checkbutton(lf_tasks, text="自动 CM", variable=var_auto_cm, command=_save_scheduler)
   cb_gift = tb.Checkbutton(lf_tasks, text="领取礼物", variable=var_gift, command=_save_scheduler)
   cb_area_convos = tb.Checkbutton(lf_tasks, text="区域对话", variable=var_area_convos, command=_save_scheduler)
+  cb_event_shop = tb.Checkbutton(lf_tasks, text="活动商店", variable=var_event_shop, command=_save_scheduler)
+  cb_mission_rewards = tb.Checkbutton(lf_tasks, text="任务奖励", variable=var_mission_rewards, command=_save_scheduler)
 
   # 将每个复选框与其后的“▶”按钮并排放置
   cb_start_game.grid(row=0, column=0, sticky=tk.W, padx=20, pady=(16, 8))
@@ -318,6 +329,14 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
   btn_run_area_convos = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=lambda: _on_run("area_convos"))  # type: ignore[call-arg]
   btn_run_area_convos.grid(row=1, column=3, sticky=tk.W, padx=(4, 12), pady=(8, 8))
 
+  cb_event_shop.grid(row=1, column=4, sticky=tk.W, padx=20, pady=(8, 8))
+  btn_run_event_shop = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=lambda: _on_run("event_shop"))  # type: ignore[call-arg]
+  btn_run_event_shop.grid(row=1, column=5, sticky=tk.W, padx=(4, 12), pady=(8, 8))
+
+  cb_mission_rewards.grid(row=1, column=6, sticky=tk.W, padx=20, pady=(8, 8))
+  btn_run_mission_rewards = tb.Button(lf_tasks, text="▶", width=2, padding=0, bootstyle="secondary-toolbutton", command=lambda: _on_run("mission_rewards"))  # type: ignore[call-arg]
+  btn_run_mission_rewards.grid(row=1, column=7, sticky=tk.W, padx=(4, 12), pady=(8, 8))
+
   def _on_auto_live() -> None:
     sch = app.service.scheduler
     if sch.is_starting or sch.is_stopping or sch.running:
@@ -338,6 +357,11 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     loop_mode_var = tk.StringVar(value="list")
     auto_mode_var = tk.StringVar(value="game_auto")
     debug_enabled_var = tk.BooleanVar(value=False)
+    ap_multiplier_var = tk.StringVar(
+      value=("保持现状" if conf.live.ap_multiplier is None else str(conf.live.ap_multiplier))
+    )
+    song_name_var = tk.StringVar(value=(conf.live.song_name or SONG_KEEP_UNCHANGED))
+    last_single_song_name = {"value": song_name_var.get()}
 
     def _center_window() -> None:
       win.update_idletasks()
@@ -362,6 +386,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
       count_var.set("10")
       loop_mode_var.set("list")
       auto_mode_var.set("game_auto")
+      ap_multiplier_var.set("1")
       _sync_count_state()
 
     def _apply_preset_fc() -> None:
@@ -369,6 +394,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
       count_var.set("10")
       loop_mode_var.set("single")
       auto_mode_var.set("script_auto")
+      ap_multiplier_var.set("0")
       _sync_count_state()
 
     def _apply_preset_leader() -> None:
@@ -376,6 +402,7 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
       count_var.set("30")
       loop_mode_var.set("single")
       auto_mode_var.set("script_auto")
+      ap_multiplier_var.set("0")
       _sync_count_state()
 
     row_preset = tb.Frame(body)
@@ -402,34 +429,62 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     row_loop.grid(row=3, column=0, sticky=tk.W, pady=(0, 10))
     tb.Label(row_loop, text="循环模式：", width=8, anchor=tk.W).pack(side=tk.LEFT)
     tb.Radiobutton(row_loop, text="单曲循环", value="single", variable=loop_mode_var).pack(side=tk.LEFT, padx=(8, 12))
-    tb.Radiobutton(row_loop, text="列表循环", value="list", variable=loop_mode_var).pack(side=tk.LEFT)
-
-    row_song = tb.Frame(body)
-    row_song.grid(row=4, column=0, sticky=tk.W, pady=(0, 10))
-    tb.Label(row_song, text="演出歌曲：", width=8, anchor=tk.W).pack(side=tk.LEFT)
-    cmb_song = tb.Combobox(row_song, values=["当前选中歌曲"], state="disabled", width=24)
-    cmb_song.set("当前选中歌曲")
-    cmb_song.pack(side=tk.LEFT, padx=(8, 0))
+    tb.Radiobutton(row_loop, text="列表顺序", value="list", variable=loop_mode_var).pack(side=tk.LEFT, padx=(0, 12))
+    tb.Radiobutton(row_loop, text="列表随机", value="random", variable=loop_mode_var).pack(side=tk.LEFT)
 
     row_auto = tb.Frame(body)
-    row_auto.grid(row=5, column=0, sticky=tk.W, pady=(0, 10))
+    row_auto.grid(row=4, column=0, sticky=tk.W, pady=(0, 10))
     tb.Label(row_auto, text="自动模式：", width=8, anchor=tk.W).pack(side=tk.LEFT)
-    tb.Radiobutton(row_auto, text="无", value="none", variable=auto_mode_var).pack(side=tk.LEFT, padx=(8, 12))
-    tb.Radiobutton(row_auto, text="游戏自动", value="game_auto", variable=auto_mode_var).pack(side=tk.LEFT, padx=(0, 12))
+    tb.Radiobutton(row_auto, text="游戏自动", value="game_auto", variable=auto_mode_var).pack(side=tk.LEFT, padx=(8, 12))
     tb.Radiobutton(row_auto, text="脚本自动", value="script_auto", variable=auto_mode_var).pack(side=tk.LEFT)
 
+    row_ap = tb.Frame(body)
+    row_ap.grid(row=5, column=0, sticky=tk.W, pady=(0, 10))
+    tb.Label(row_ap, text="AP 倍率：", width=8, anchor=tk.W).pack(side=tk.LEFT)
+    cmb_ap_multiplier = tb.Combobox(
+      row_ap,
+      state="readonly",
+      textvariable=ap_multiplier_var,
+      values=["保持现状", *[str(i) for i in range(0, 11)]],
+      width=24,
+    )
+    cmb_ap_multiplier.pack(side=tk.LEFT, padx=(8, 0))
+
+    row_song = tb.Frame(body)
+    row_song.grid(row=6, column=0, sticky=tk.W, pady=(0, 12))
+    tb.Label(row_song, text="歌曲名称：", width=8, anchor=tk.W).pack(side=tk.LEFT)
+    cmb_song_name = tb.Combobox(
+      row_song,
+      textvariable=song_name_var,
+      values=SONG_NAME_OPTIONS,
+      width=24,
+    )
+    cmb_song_name.pack(side=tk.LEFT, padx=(8, 0))
+
     row_debug = tb.Frame(body)
-    row_debug.grid(row=6, column=0, sticky=tk.W, pady=(0, 12))
+    row_debug.grid(row=7, column=0, sticky=tk.W, pady=(0, 12))
     tb.Checkbutton(row_debug, text="调试显示（脚本自动）", variable=debug_enabled_var).pack(side=tk.LEFT)
 
     btn_bar = tb.Frame(body)
-    btn_bar.grid(row=7, column=0, sticky=tk.E)
+    btn_bar.grid(row=8, column=0, sticky=tk.E)
 
     def _sync_count_state() -> None:
       if count_mode_var.get() == "specify":
         ent_count.configure(state=tk.NORMAL)
       else:
         ent_count.configure(state=tk.DISABLED)
+
+    def _sync_loop_mode_state(*_args) -> None:
+      if loop_mode_var.get() in ("list", "random"):
+        current_song_name = song_name_var.get().strip()
+        if current_song_name:
+          last_single_song_name["value"] = current_song_name
+        song_name_var.set("")
+        cmb_song_name.configure(state="disabled")
+      else:
+        if not song_name_var.get().strip():
+          song_name_var.set(last_single_song_name["value"] or SONG_KEEP_UNCHANGED)
+        cmb_song_name.configure(state="normal")
 
     last_auto_mode = auto_mode_var.get()
 
@@ -439,12 +494,18 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
       if current == "script_auto" and last_auto_mode != "script_auto":
         messagebox.showwarning(
           "提示",
-          "使用“脚本自动”时必须满足：\n1.当前选中演出歌曲为 EASY 难度\n2. 流速为 1，特效为轻量\n3.使用 MuMu 模拟器且控制方法选择「nemu_ipc」\n4. 使用脚本自动演出带来的一切风险与后果由使用者自行承担",
+          "使用“脚本自动”时必须满足：\n1.当前选中演出歌曲为 EASY 难度\n2. 流速为 1，特效为轻量\n3.使用 MuMu 模拟器且控制方法选择「nemu_ipc」\n4.分辨率为 16:9，支持 1280x720 及其等比例缩放（如 1600x900、1920x1080）\n5. 使用脚本自动演出带来的一切风险与后果由使用者自行承担",
           parent=win,
         )
+      if current == "script_auto":
+        ap_multiplier_var.set("0")
+        cmb_ap_multiplier.configure(state="disabled")
+      else:
+        cmb_ap_multiplier.configure(state="readonly")
       last_auto_mode = current
 
     auto_mode_var.trace_add("write", _on_auto_mode_change)
+    loop_mode_var.trace_add("write", _sync_loop_mode_state)
 
     def _on_start() -> None:
       count: int | None = None
@@ -455,15 +516,12 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
           return
         count = int(value)
       kwargs = {
-        "count_mode": ("specify" if count_mode_var.get() == "specify" else "all"),
-        "count": count,
-        "loop_mode": ("single" if loop_mode_var.get() == "single" else "list"),
-        "auto_mode": (
-          "none"
-          if auto_mode_var.get() == "none"
-          else ("script_auto" if auto_mode_var.get() == "script_auto" else "game_auto")
-        ),
+        "run_count": (count if count_mode_var.get() == "specify" else None),
+        "cycle_mode": loop_mode_var.get(),
+        "play_mode": ("script_auto" if auto_mode_var.get() == "script_auto" else "game_auto"),
         "debug_enabled": bool(debug_enabled_var.get()),
+        "ap_multiplier": (None if ap_multiplier_var.get() == "保持现状" else int(ap_multiplier_var.get())),
+        "song_name": normalize_song_name_input(song_name_var.get()),
       }
       win.destroy()
       sch.run_single("auto_live", run_in_thread=True, kwargs=kwargs)
@@ -473,6 +531,8 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     tb.Button(btn_bar, text="取消", command=win.destroy).pack(side=tk.LEFT)
 
     _sync_count_state()
+    _sync_loop_mode_state()
+    _on_auto_mode_change()
     _center_window()
 
   def _on_main_story() -> None:

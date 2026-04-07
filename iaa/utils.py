@@ -35,3 +35,8 @@ def sprite_path(path: str) -> str:
 
     # 兜底：包内资源（适用于以包形式安装时）
     return str(resources.files('iaa.res') / path)
+
+def asset_path(path: str) -> str:
+    if not os.path.exists('./assets'):
+        raise RuntimeError("Missing assets folder in current directory.")
+    return os.path.abspath(os.path.join('./assets', path))

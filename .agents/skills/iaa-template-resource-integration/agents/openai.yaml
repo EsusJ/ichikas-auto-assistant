@@ -1,0 +1,4 @@
+interface:
+  display_name: "IAA Template Resource Integration"
+  short_description: "Wire reusable image templates into resources and R.py."
+  default_prompt: "Use $iaa-template-resource-integration to turn a captured image patch into a formal IAA template resource by adding it under resources, defining the matching .png.json, running tools/make_resources.py with the repo .venv, and switching production code to the generated R.py prefab."
