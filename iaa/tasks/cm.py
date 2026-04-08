@@ -7,7 +7,7 @@ from kotonebot import device, task, Loop, action, sleep
 from . import R
 from .common import go_home
 from iaa.consts import package_name
-from iaa.context import conf as get_conf, task_reporter
+from iaa.context import conf as get_conf, task_reporter, server
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +183,9 @@ def cm():
     """
     看广告并领取奖励。包括演出积分/心愿结晶、活动货币、两次 AP 恢复、两次礼物、水晶、音乐商店。
     """
+    if server() == 'cn':
+        logger.info('CM task is not supported on CN server.')
+        return
     go_home()
     rep = task_reporter()
     rep.message('正在前往交叉路口')

@@ -4,13 +4,14 @@ PACKAGE_NAME_JP = 'com.sega.pjsekai'
 PACKAGE_NAME_CN = 'com.hermes.mk'
 PACKAGE_NAME_TW = 'com.hermes.mk.asia'
 
-PACKAGE_NAME_MAP: dict[Literal['jp', 'tw'], str] = {
+PACKAGE_NAME_MAP: dict[Literal['jp', 'tw', 'cn'], str] = {
     'jp': PACKAGE_NAME_JP,
     'tw': PACKAGE_NAME_TW,
+    'cn': PACKAGE_NAME_CN,
 }
 
 
-def package_by_server(server: Literal['jp', 'tw']) -> str:
+def package_by_server(server: Literal['jp', 'tw', 'cn']) -> str:
     return PACKAGE_NAME_MAP.get(server, PACKAGE_NAME_JP)
 
 def package_name() -> str:
