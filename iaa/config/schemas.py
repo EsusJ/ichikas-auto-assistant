@@ -420,6 +420,10 @@ class EventStoreConfig(BaseModel):
     ]
 
 
+class TelemetryConfig(BaseModel):
+    sentry: bool | None = None
+
+
 class SchedulerConfig(BaseModel):
     start_game_enabled: bool = True
     solo_live_enabled: bool = True

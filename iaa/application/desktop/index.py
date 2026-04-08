@@ -5,6 +5,7 @@ import os
 import ttkbootstrap as tb
 from ..service.iaa_service import IaaService
 from tkinter import messagebox
+from iaa.telemetry import setup as setup_telemetry
 
 
 @dataclass
@@ -129,6 +130,20 @@ class DesktopApp:
 
 def main() -> None:
     app = DesktopApp()
+    setup_telemetry(app.service.config.conf)
+    if app.service.config.conf.telemetry.sentry is None:
+        allow = messagebox.askyesno(
+            "数据收集",
+            "是否允许 iaa（一歌小助手）自动发送匿名错误报告？发送的信息将仅用于改善 iaa。",
+            parent=app.root,
+        )
+        app.service.config.conf.telemetry.sentry = allow
+        app.service.config.save()
+        messagebox.showinfo(
+            "数据收集",
+            "感谢支持。此功能自下次 iaa 启动时生效。" if allow else "已禁用自动发送匿名错误报告。将不会发送任何信息。",
+            parent=app.root,
+        )
     app.run()
 
 

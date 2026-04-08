@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 
 import ttkbootstrap as tb
 
@@ -102,6 +103,7 @@ class ConfStore:
     self.event_shop_purchase_items_text: Optional[tk.Text] = None
     self.event_shop_available_listbox: Optional[tk.Listbox] = None
     self.event_shop_selected_listbox: Optional[tk.Listbox] = None
+    self.telemetry_sentry_var = tk.BooleanVar()
 
 
 def build_event_shop_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) -> None:
@@ -478,6 +480,27 @@ def build_cm_config_group(parent: tk.Misc, conf: IaaConfig, store: ConfStore) ->
   tb.Entry(row, textvariable=store.cm_watch_ad_wait_sec_var, width=30).pack(side=tk.LEFT)
 
 
+def build_telemetry_config_group(app: DesktopApp, parent: tk.Misc, conf: IaaConfig, store: ConfStore) -> None:
+  frame = tb.Labelframe(parent, text="数据收集")
+  frame.pack(fill=tk.X, padx=16, pady=8)
+
+  store.telemetry_sentry_var.set(bool(conf.telemetry.sentry))
+
+  def _on_toggle() -> None:
+    conf.telemetry.sentry = bool(store.telemetry_sentry_var.get())
+    app.service.config.save()
+    messagebox.showinfo("数据收集", "将于下次 iaa 启动时生效。", parent=app.root)
+
+  row = tb.Frame(frame)
+  row.pack(fill=tk.X, padx=8, pady=8)
+  tb.Checkbutton(
+    row,
+    text="自动发送匿名错误报告",
+    variable=store.telemetry_sentry_var,
+    command=_on_toggle,
+  ).pack(side=tk.LEFT)
+
+
 def build_settings_tab(app: DesktopApp, parent: tk.Misc) -> None:  # noqa: ARG001
   # 可滚动容器
   container = tb.Frame(parent)
@@ -556,6 +579,7 @@ def build_settings_tab(app: DesktopApp, parent: tk.Misc) -> None:  # noqa: ARG00
   build_challenge_live_config_group(inner, conf, store)
   build_cm_config_group(inner, conf, store)
   build_event_shop_config_group(inner, conf, store)
+  build_telemetry_config_group(app, inner, conf, store)
 
   def on_save() -> None:
     try:
@@ -644,6 +668,7 @@ def build_settings_tab(app: DesktopApp, parent: tk.Misc) -> None:  # noqa: ARG00
             continue
           add_shop_item(s)
       conf.event_shop.purchase_items = ids
+      conf.telemetry.sentry = bool(store.telemetry_sentry_var.get())
 
       app.service.config.save()
       show_toast(app.root, "保存成功", kind="success")
