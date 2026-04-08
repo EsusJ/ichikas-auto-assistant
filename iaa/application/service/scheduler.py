@@ -192,6 +192,7 @@ class SchedulerService:
                     finally:
                         self._device_started = False
                 self.device = None
+                self._thread = None
                 self.__running = False
                 # 停止阶段结束
                 if self.__stop_requested:
@@ -232,10 +233,6 @@ class SchedulerService:
         vars.flow.request_interrupt()
         if block:
             self._thread.join()
-        if self.device:
-            self.device.stop()
-        self.device = None
-        self._thread = None
 
     def run_single(
         self,
