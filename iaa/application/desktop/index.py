@@ -31,6 +31,20 @@ class DesktopApp:
 
         # 服务聚合
         self.service = IaaService()
+        setup_telemetry(self.service.config.conf)
+        if self.service.config.conf.telemetry.sentry is None:
+            allow = messagebox.askyesno(
+                "数据收集",
+                "是否允许 iaa（一歌小助手）自动发送匿名错误报告？发送的信息将仅用于改善 iaa。",
+                parent=self.root,
+            )
+            self.service.config.conf.telemetry.sentry = allow
+            self.service.config.save()
+            messagebox.showinfo(
+                "数据收集",
+                "感谢支持。此功能自下次 iaa 启动时生效。" if allow else "已禁用自动发送匿名错误报告。将不会发送任何信息。",
+                parent=self.root,
+            )
         
         # 设置包含版本号的窗口标题
         try:
@@ -158,20 +172,6 @@ class DesktopApp:
 
 def main() -> None:
     app = DesktopApp()
-    setup_telemetry(app.service.config.conf)
-    if app.service.config.conf.telemetry.sentry is None:
-        allow = messagebox.askyesno(
-            "数据收集",
-            "是否允许 iaa（一歌小助手）自动发送匿名错误报告？发送的信息将仅用于改善 iaa。",
-            parent=app.root,
-        )
-        app.service.config.conf.telemetry.sentry = allow
-        app.service.config.save()
-        messagebox.showinfo(
-            "数据收集",
-            "感谢支持。此功能自下次 iaa 启动时生效。" if allow else "已禁用自动发送匿名错误报告。将不会发送任何信息。",
-            parent=app.root,
-        )
     app.run()
 
 
