@@ -118,9 +118,7 @@ class IaaService:
             _zipdir(logs_dir, 'logs', zf)
             _zipdir(conf_dir, 'conf', zf)
             try:
-                if not self.scheduler.device:
-                    raise RuntimeError("Device not initialized.")
-                img_data = self.scheduler.device.screenshot()
+                img_data = self.scheduler.capture_screenshot()
                 img_file = cv2.imencode('.png', img_data)[1].tobytes()
                 zf.writestr('screenshot.png', img_file)
             except Exception:

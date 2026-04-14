@@ -540,6 +540,31 @@ class SchedulerService:
         self._connect_thread = threading.Thread(target=_connect, name="IAA-DeviceConnect", daemon=True)
         self._connect_thread.start()
 
+    def capture_screenshot(self):
+        """
+        获取当前设备截图。
+
+        优先复用调度器当前持有的设备；若当前未持有设备，则临时创建设备、
+        启动、截图，并在完成后立即清理。
+        """
+        if self.device is not None:
+            return self.device.screenshot()
+
+        logger.info("No active scheduler device. Creating a temporary device for screenshot capture.")
+        device = self.__create_device()
+        device.orientation = 'landscape'
+        started = False
+        try:
+            device.start()
+            started = True
+            return device.screenshot()
+        finally:
+            if started:
+                try:
+                    device.stop()
+                except Exception:
+                    logger.exception("Failed to stop temporary screenshot device.")
+
     def __prepare_context(self) -> None:
         """
         初始化配置上下文与设备上下文。
