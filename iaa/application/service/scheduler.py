@@ -289,7 +289,10 @@ class SchedulerService:
                     self.is_stopping = False
                     self.__stop_requested = False
                 from kotonebot.backend.context import vars
-                vars.flow.clear_interrupt()
+                try:
+                    vars.flow.clear_interrupt()
+                except Exception:
+                    logger.exception("Failed to clear flow interrupt state.")
                 # 若在准备阶段失败，也需要复位启动标记
                 self.is_starting = False
                 logger.info("Scheduler stopped.")
@@ -369,16 +372,25 @@ class SchedulerService:
                 instance.wait_available()
 
         def _resolve_mumu_instance(host_cls: type[HostProtocol], host_name: str) -> Instance:
+            def _check(id: str):
+                if host_cls is Mumu12V5Host and host_cls.check_app_keptlive(id):
+                    raise RuntimeError(
+                        '检测到当前模拟器 MuMu 12 已开启“应用保活”功能。\n'
+                        '请前往 MuMu 模拟器设置 → 其他 → 后台挂机时保活运行 中关闭，然后重新尝试。'
+                    ) 
+
             instance_id = emulator_data.instance_id if isinstance(emulator_data, MuMuEmulatorData) else None
             if instance_id is not None:
                 instance = host_cls.query(id=instance_id)
                 if instance is None:
                     raise RuntimeError(f'{host_name} instance not found: {instance_id}')
+                _check(instance.id)
                 return instance
 
             hosts = host_cls.list()
             if not hosts:
                 raise RuntimeError(f'No {host_name} host found.')
+            _check(hosts[0].id)
             return hosts[0]
 
         def _build_scrcpy_config(timeout: float, use_virtual_display: bool):
