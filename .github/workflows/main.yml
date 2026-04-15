@@ -11,10 +11,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Check out repository (0415 分支)
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
-          ref: 0415          # 这里修复为正确分支名 0415
           fetch-depth: 0
 
       - name: Set up Python
@@ -28,13 +27,31 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev
 
-      - name: Prepare release metadata (从 0415 分支生成)
+      # ==============================================
+      # 仅修改这里！直接使用当前分支+提交哈希作为版本
+      # 自动适配任意当前分支，无需脚本生成元数据
+      # ==============================================
+      - name: Prepare release metadata
         id: meta
         shell: pwsh
         run: |
-          echo "tag=0415-build" >> $env:GITHUB_OUTPUT
-          echo "version=0415" >> $env:GITHUB_OUTPUT
-          echo "body_path=$env:RUNNER_TEMP\release-body.md" >> $env:GITHUB_OUTPUT
+          # 1. 生成版本标签：分支名-短哈希（例：main-a1b2c3d）
+          $tag = "${{ github.ref_name }}-$("${{ github.sha }}".Substring(0,7))"
+          # 2. 版本号 = 标签名
+          $version = $tag
+          # 3. 生成极简发布说明（保存到临时文件）
+          $bodyPath = "$env:RUNNER_TEMP\release-body.md"
+          @"
+          # Draft Release
+          - 分支: ${{ github.ref_name }}
+          - 提交: ${{ github.sha }}
+          - 自动构建: 当前分支最新代码
+          "@ | Out-File $bodyPath -Encoding utf8
+          
+          # 输出变量给后续步骤使用
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "body_path=$bodyPath" >> $env:GITHUB_OUTPUT
 
       - name: Ensure release does not already exist
         shell: pwsh
@@ -42,14 +59,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
-          gh release view "0415-build" --repo "${{ github.repository }}" 1> $null 2> "$env:RUNNER_TEMP\gh-release-view.err"
+          gh release view "${{ steps.meta.outputs.tag }}" --repo "${{ github.repository }}" 1> $null 2> "$env:RUNNER_TEMP\gh-release-view.err"
           $exitCode = $LASTEXITCODE
           if ($exitCode -eq 0) {
-            throw "Release 0415-build already exists."
+            throw "Release ${{ steps.meta.outputs.tag }} already exists."
           }
           if ($exitCode -ne 1) {
             Get-Content "$env:RUNNER_TEMP\gh-release-view.err"
-            throw "Failed to query release state."
+            throw "Failed to query release state for ${{ steps.meta.outputs.tag }}."
           }
           $global:LASTEXITCODE = 0
 
@@ -60,15 +77,16 @@ jobs:
         id: asset
         shell: pwsh
         run: |
-          uv run python tools/release_draft.py find-asset --version "0415"
+          uv run python tools/release_draft.py find-asset `
+            --version "${{ steps.meta.outputs.version }}"
 
       - name: Create draft release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "0415-build" "${{ steps.asset.outputs.asset_path }}" `
+          gh release create "${{ steps.meta.outputs.tag }}" "${{ steps.asset.outputs.asset_path }}" `
             --repo "${{ github.repository }}" `
             --draft `
-            --title "0415 分支自动构建" `
-            --notes "基于 0415 分支自动生成发布版本"
+            --title "${{ steps.meta.outputs.tag }}" `
+            --notes-file "${{ steps.meta.outputs.body_path }}"
