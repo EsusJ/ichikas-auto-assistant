@@ -1,0 +1,39 @@
+name: Build Application (0415 Branch)
+
+on:
+  push:
+    branches: [ "0415" ] # 专门监听 0415 分支的推送
+  workflow_dispatch:     # 依然保留手动触发的按钮
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # 默认会 check out 触发该 action 的分支，也就是 0415
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        # 明确指定使用 3.10 版本，解决 onnxruntime 的依赖报错
+        run: uv python install 3.10 
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Generate resources
+        run: uv run python tools/make_resources.py
+
+      - name: Build executable
+        run: uv run python build.py build  # <--- 注意这里在末尾加了 build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iaa-windows-build-0415
+          path: dist_app/                  # <--- 注意这里改成 dist_app/
