@@ -14,7 +14,7 @@ jobs:
       - name: Check out repository (0415 分支)
         uses: actions/checkout@v4
         with:
-          ref: 0415          # 强制使用 0415 分支
+          ref: 0415          # 这里修复为正确分支名 0415
           fetch-depth: 0
 
       - name: Set up Python
@@ -32,14 +32,9 @@ jobs:
         id: meta
         shell: pwsh
         run: |
-          # 直接使用分支名作为版本，不依赖 Git Tag
           echo "tag=0415-build" >> $env:GITHUB_OUTPUT
           echo "version=0415" >> $env:GITHUB_OUTPUT
           echo "body_path=$env:RUNNER_TEMP\release-body.md" >> $env:GITHUB_OUTPUT
-
-          # 生成发布说明
-          uv run python tools/release_draft.py prepare-body `
-            --body-output "$env:RUNNER_TEMP\release-body.md"
 
       - name: Ensure release does not already exist
         shell: pwsh
@@ -47,14 +42,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
-          gh release view "${{ steps.meta.outputs.tag }}" --repo "${{ github.repository }}" 1> $null 2> "$env:RUNNER_TEMP\gh-release-view.err"
+          gh release view "0415-build" --repo "${{ github.repository }}" 1> $null 2> "$env:RUNNER_TEMP\gh-release-view.err"
           $exitCode = $LASTEXITCODE
           if ($exitCode -eq 0) {
-            throw "Release ${{ steps.meta.outputs.tag }} already exists."
+            throw "Release 0415-build already exists."
           }
           if ($exitCode -ne 1) {
             Get-Content "$env:RUNNER_TEMP\gh-release-view.err"
-            throw "Failed to query release state for ${{ steps.meta.outputs.tag }}."
+            throw "Failed to query release state."
           }
           $global:LASTEXITCODE = 0
 
@@ -65,16 +60,15 @@ jobs:
         id: asset
         shell: pwsh
         run: |
-          uv run python tools/release_draft.py find-asset `
-            --version "${{ steps.meta.outputs.version }}"
+          uv run python tools/release_draft.py find-asset --version "0415"
 
       - name: Create draft release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ steps.meta.outputs.tag }}" "${{ steps.asset.outputs.asset_path }}" `
+          gh release create "0415-build" "${{ steps.asset.outputs.asset_path }}" `
             --repo "${{ github.repository }}" `
             --draft `
-            --title "0415 分支自动构建发布" `
-            --notes-file "${{ steps.meta.outputs.body_path }}"
+            --title "0415 分支自动构建" `
+            --notes "基于 0415 分支自动生成发布版本"
