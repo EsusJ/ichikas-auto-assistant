@@ -1,11 +1,11 @@
 # ruff: noqa: E701
 from enum import Enum
-from typing import Literal
-from pydantic import BaseModel
+from typing import Literal, Optional
+from pydantic import BaseModel, ConfigDict
 from typing_extensions import assert_never
 
 LinkAccountOptions = Literal['no', 'google', 'google_play']
-EmulatorOptions = Literal['mumu', 'mumu_v5', 'custom']
+EmulatorOptions = Literal['mumu', 'mumu_v5', 'custom', 'physical_android']
 
 
 class GameCharacter(str, Enum):
@@ -272,11 +272,23 @@ class ChallengeLiveAward(str, Enum):
         }
 
 
+class MuMuEmulatorData(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+    instance_id: str | None = None
+
+
 class CustomEmulatorData(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     adb_ip: str = '127.0.0.1'
     adb_port: int = 5555
     emulator_path: str = ''
     emulator_args: str = ''
+
+
+class PhysicalAndroidData(BaseModel):
+    adb_serial: str = ''
 
 
 class GameConfig(BaseModel):
@@ -285,7 +297,7 @@ class GameConfig(BaseModel):
     emulator: EmulatorOptions = 'mumu_v5'
     control_impl: Literal['nemu_ipc', 'adb', 'uiautomator'] = 'nemu_ipc'
     check_emulator: bool = False
-    emulator_data: CustomEmulatorData | None = None
+    emulator_data: MuMuEmulatorData | CustomEmulatorData | PhysicalAndroidData | None = None
     """
     是否引继账号。
     
@@ -298,7 +310,7 @@ class GameConfig(BaseModel):
 class LiveConfig(BaseModel):
     enabled: bool = False
     mode: Literal['auto'] = 'auto'
-    song_id: int = -1
+    song_name: str | None = None
     count_mode: Literal['once', 'all', 'specify'] = 'all'
     """
     演出次数模式。
@@ -311,7 +323,14 @@ class LiveConfig(BaseModel):
     """
     指定次数。
     """
-    fully_deplete: bool = False
+    auto_set_unit: bool = False
+    """演出前是否自动编队"""
+    ap_multiplier: int | None = 10
+    """AP 倍率。None 表示保持现状。"""
+    append_fc: bool = False
+    """是否在常规演出后追加一次 Full Combo 演出。"""
+    prepend_random: bool = False
+    """是否在常规演出前追加一首随机歌曲。"""
 
 
 class ChallengeLiveConfig(BaseModel):
@@ -323,6 +342,84 @@ class CmConfig(BaseModel):
     watch_ad_wait_sec: int = 70
 
 
+class ShopItem(str, Enum):
+    jp: str
+    cn: str
+    tw: str
+
+    ITEM_2STAR_MEMBER = ("2star_event_card", "★2メンバー", "★2成员", "★2成員")
+    ITEM_3STAR_MEMBER = ("3star_event_card", "★3メンバー", "★3成员", "★3成員")
+    ITEM_COVER_CARD_VOUCHER = ("cover_card_voucher", "ボーカルカード交換チケット", "歌手兑换卡", "歌手兌換券")
+    ITEM_CRYSTAL = ("crystal", "クリスタル", "水晶", "水晶")
+    ITEM_WISH_PIECE = ("wish_piece", "想いのカケラ", "心愿碎片", "心願碎片")
+    ITEM_BONUS_ENERGY_DRINK_S = ("bonus_energy_drink_s", "ライブボーナスドリンク（小）", "演出能量饮料（小）", "LIVE BOUNS 飲料（小）")
+    ITEM_STAMP_VOUCHER = ("stamp_voucher", "スタンプ交換券", "表情兑换券", "貼園交換券")
+    ITEM_PRACTICE_SCORE_INTERMEDIATE = ("practice_score_intermediate", "練習用スコア（中級）", "练习乐谱（中级）", "練習譜（中級）")
+    ITEM_MUSIC_CARD = ("music_card", "ミュージックカード", "音乐卡", "音樂卡")
+    ITEM_MIRACLE_GEM = ("miracle_gem", "ミラクルジェム", "奇迹晶石", "奇蹟晶石")
+
+    # ITEM_CUTE_GEM = ("cute_gem", "キュートジェム", "可爱晶石", "可愛晶石")
+    # ITEM_COOL_GEM = ("cool_gem", "クールジェム", "冷酷晶石", "帥氣晶石")
+    # ITEM_PURE_GEM = ("pure_gem", "ピュアジェム", "纯真晶石", "純真晶石")
+    # ITEM_HAPPY_GEM = ("happy_gem", "ハッピージェム", "开心晶石", "開心晶石")
+    # ITEM_MYSTERIOUS_GEM = ("mysterious_gem", "ミステリアスジェム", "神秘晶石", "神秘晶石")
+
+    # ITEM_CUTE_CHARM = ("cute_charm", "キュートピース", "可爱碎片", "可愛碎片")
+    # ITEM_COOL_CHARM = ("cool_charm", "クールピース", "冷酷碎片", "帥氣碎片")
+    # ITEM_PURE_CHARM = ("pure_charm", "ピュアピース", "纯真碎片", "純真碎片")
+    # ITEM_HAPPY_CHARM = ("happy_charm", "ハッピーピース", "开心碎片", "開心碎片")
+    # ITEM_MYSTERIOUS_CHARM = ("mysterious_charm", "ミステリアスピース", "神秘碎片", "神秘碎片")
+
+    ITEM_MAGIC_CLOTH = ("magic_cloth", "魔法の布", "魔法之布", "魔法布")
+    ITEM_MAGIC_THREAD = ("magic_thread", "魔法の糸", "魔法之线", "魔法線")
+    ITEM_MAGICAL_SEED = ("magical_seed", "ふしぎな種", "奇异种子", "不可思議的種子")
+    ITEM_WISH_DROP = ("wish_drop", "願いの雫", "心愿之露", "祈願水滴")
+    ITEM_SKILL_UP_SCORE_INTERMEDIATE = ("skill_up_score_intermediate", "スキルアップ用スコア（中級）", "技能升级乐谱（中级）", "技能升級譜（中級）")
+    ITEM_COIN_100000 = ("coin_100000", "コイン×100000", "硬币x100000", "硬幣x100000")
+    ITEM_COIN_1 = ("coin_1", "コインx1", "硬币x1", "硬幣x1")
+    # ITEM_3STAR_VOUCHER = ("3star_voucher", "★3メンバーセレクト券", "★3成员自选券", "★3成員自選券")
+    # ITEM_2STAR_VOUCHER = ("2star_voucher", "★2メンバー交換券", "★2成员自选券", "★2成員自選券")
+
+    _display_maps: dict[str, dict[str, "ShopItem"]]
+
+    def __new__(cls, value: str, jp: str, cn: str, tw: str):
+        obj = str.__new__(cls, value)
+        obj._value_ = value
+        obj.jp = jp
+        obj.cn = cn
+        obj.tw = tw
+        return obj
+
+    def display(self, server: Literal["jp", "cn", "tw"]) -> str:
+        if server == "jp":
+            return self.jp
+        if server == "cn":
+            return self.cn
+        if server == "tw":
+            return self.tw
+        raise ValueError(f"Unsupported server: {server}")
+
+    @classmethod
+    def from_display(cls, server: Literal["jp", "cn", "tw"], text: str) -> Optional["ShopItem"]:
+        try:
+            return cls._display_maps[server].get(text)
+        except KeyError as e:
+            raise ValueError(f"Unsupported server: {server}") from e
+
+
+ShopItem._display_maps = {
+    "jp": {item.jp: item for item in ShopItem},
+    "cn": {item.cn: item for item in ShopItem},
+    "tw": {item.tw: item for item in ShopItem},
+}
+
+class EventStoreConfig(BaseModel):
+    purchase_items: list[ShopItem] = [
+        ShopItem.ITEM_CRYSTAL,
+        ShopItem.ITEM_3STAR_MEMBER,
+    ]
+
+
 class SchedulerConfig(BaseModel):
     start_game_enabled: bool = True
     solo_live_enabled: bool = True
@@ -331,6 +428,8 @@ class SchedulerConfig(BaseModel):
     cm_enabled: bool = True
     gift_enabled: bool = True
     area_convos_enabled: bool = True
+    mission_rewards_enabled: bool = True
+    event_shop_enabled: bool = True
 
     def is_enabled(self, task_id: str) -> bool:
         """根据任务标识判断是否启用。
@@ -343,6 +442,7 @@ class SchedulerConfig(BaseModel):
         - "activity_story"
         - "gift"
         - "area_convos"
+        - "mission_rewards"
         """
         if task_id == 'start_game':
             return bool(self.start_game_enabled)
@@ -358,4 +458,8 @@ class SchedulerConfig(BaseModel):
             return bool(self.gift_enabled)
         if task_id == 'area_convos':
             return bool(self.area_convos_enabled)
+        if task_id == 'mission_rewards':
+            return bool(self.mission_rewards_enabled)
+        if task_id == 'event_shop':
+            return bool(self.event_shop_enabled)
         return False
