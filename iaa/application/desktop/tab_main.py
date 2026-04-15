@@ -405,10 +405,11 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
     body.pack(fill=tk.BOTH, expand=True)
     body.grid_columnconfigure(0, weight=1)
 
-    count_mode_var = tk.StringVar(value="specify")
-    count_var = tk.StringVar(value="10")
-    loop_mode_var = tk.StringVar(value="list")
-    auto_mode_var = tk.StringVar(value="game_auto")
+# ------------------ 修改后 ------------------
+    count_mode_var = tk.StringVar(value="specify") # 保持“指定次数”模式
+    count_var = tk.StringVar(value="1000")         # 1. 次数改为 1000
+    loop_mode_var = tk.StringVar(value="single")    # 2. 循环模式改为“单曲循环”
+    auto_mode_var = tk.StringVar(value="script_auto") # 3. 自动模式改为“脚本自动”
     debug_enabled_var = tk.BooleanVar(value=False)
     auto_set_unit_var = tk.BooleanVar(value=bool(conf.live.auto_set_unit))
     ap_multiplier_var = tk.StringVar(
@@ -609,9 +610,9 @@ def build_control_tab(app: DesktopApp, parent: tk.Misc) -> None:
           parent=win,
         )
      # if current == "script_auto":
-        ap_multiplier_var.set("0")
-        cmb_ap_multiplier.configure(state="disabled")
-    #  else:
+     #   ap_multiplier_var.set("0")
+     #   cmb_ap_multiplier.configure(state="disabled")
+     # else:
         cmb_ap_multiplier.configure(state="readonly")
       last_auto_mode = current
 
