@@ -1,6 +1,6 @@
 [project]
 name = "ichikas-auto-assistant"
-version = "26.03b3"
+version = "26.04b2"
 description = """
 Ichika's Auto Assistant is a helper script
 for Project Sekai: Colorful Stage
@@ -15,6 +15,7 @@ dependencies = [
     "onnxruntime ; sys_platform != 'win32'",
     "psutil",
     "pydantic",
+    "sentry-sdk",
     "thefuzz>=0.22.1",
     "ttkbootstrap>=1.14.2",
 ]
@@ -43,6 +44,6 @@ prefabs_module = "iaa.game_ui.elements"
 resource_path = "resources/"
 
 [tool.kotonebot.variant]                                                                                                                  
-variants = ["tw"]
+variants = ["tw", "cn"]
 base = "jp"
 path_pattern = "nest"

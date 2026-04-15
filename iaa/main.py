@@ -6,6 +6,7 @@ from kotonebot.backend import debug
 
 import iaa.application.service.config_service as config_service_module
 from iaa.application.service.iaa_service import IaaService
+from iaa.telemetry import setup as setup_telemetry
 from iaa.tasks.registry import MANUAL_TASKS, REGULAR_TASKS, list_task_infos
 
 ALL_TASK_IDS = tuple([*REGULAR_TASKS.keys(), *MANUAL_TASKS.keys()])
@@ -199,6 +200,7 @@ def execute_cli_action(action: CliAction) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     action = parse_cli_action(argv)
+    setup_telemetry(config_name=action.config_name)
     return execute_cli_action(action)
 
 
