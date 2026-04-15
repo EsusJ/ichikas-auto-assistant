@@ -1,10 +1,10 @@
-name: Build Application
+name: Build Application (0415 Branch)
 
 on:
   push:
-    branches: [ "main" ] # 或者你当前的分支名
-  workflow_dispatch:     # 允许手动在 Actions 页面触发
-#
+    branches: [ "0415" ] # 专门监听 0329 分支的推送
+  workflow_dispatch:     # 依然保留手动触发的按钮
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        # 默认会 check out 触发该 action 的分支，也就是 0329
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -19,16 +20,20 @@ jobs:
           version: "latest"
 
       - name: Set up Python
-        run: uv python install 3.10 # 建议根据 pyproject.toml 中的要求指定版本
+        # 明确指定使用 3.10 版本，解决 onnxruntime 的依赖报错
+        run: uv python install 3.10 
 
       - name: Install dependencies
         run: uv sync
 
+      - name: Generate resources
+        run: uv run python tools/make_resources.py
+
       - name: Build executable
-        run: uv run python build.py
+        run: uv run python build.py build  # <--- 注意这里在末尾加了 build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iaa-windows-build
-          path: dist/ # build.py 通常会将打包好的文件放在 dist 目录下
+          name: iaa-windows-build-0329
+          path: dist_app/                  # <--- 注意这里改成 dist_app/
