@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 from iaa.main import execute_cli_action, parse_cli_action
+from iaa.tasks.live.live import ListLoopPlan
 
 
 class CliParseTests(unittest.TestCase):
@@ -44,17 +45,17 @@ class CliExecuteTests(unittest.TestCase):
         code = execute_cli_action(action)
 
         self.assertEqual(code, 0)
+        plan = scheduler.run_single.call_args.kwargs['kwargs']['plan']
         scheduler.run_single.assert_called_once_with(
             'auto_live',
             run_in_thread=False,
-            kwargs={
-                'count_mode': 'specify',
-                'count': 3,
-                'loop_mode': 'list',
-                'auto_mode': 'game_auto',
-                'debug_enabled': False,
-            },
+            kwargs={'plan': plan},
         )
+        self.assertIsInstance(plan, ListLoopPlan)
+        assert isinstance(plan, ListLoopPlan)
+        self.assertEqual(plan.loop_count, 3)
+        self.assertEqual(plan.loop_song_mode, 'list_next')
+        self.assertEqual(plan.play_mode, 'game_auto')
 
     @mock.patch('iaa.main.IaaService')
     def test_execute_run_regular_calls_scheduler(self, iaa_service_cls: mock.Mock) -> None:

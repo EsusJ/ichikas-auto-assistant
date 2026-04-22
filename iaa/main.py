@@ -6,6 +6,7 @@ from kotonebot.backend import debug
 
 import iaa.application.service.config_service as config_service_module
 from iaa.application.service.iaa_service import IaaService
+from iaa.application.qt.models.auto_live import auto_live_payload_to_plan
 from iaa.telemetry import setup as setup_telemetry
 from iaa.tasks.registry import MANUAL_TASKS, REGULAR_TASKS, list_task_infos
 
@@ -29,24 +30,25 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
 
 def add_auto_live_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        '--run-count',
+        '--count-mode',
+        choices=['specify', 'all'],
+        default='specify',
+        help='auto_live only: run a fixed count or keep going until AP is exhausted',
+    )
+    parser.add_argument(
+        '--count',
         type=int,
         default=10,
-        help='auto_live only: number of runs; omit value with --run-until-exhausted to loop until AP is exhausted',
+        help='auto_live only: run count when --count-mode=specify',
     )
     parser.add_argument(
-        '--run-until-exhausted',
-        action='store_true',
-        help='auto_live only: ignore --run-count and loop until AP is exhausted',
-    )
-    parser.add_argument(
-        '--cycle-mode',
+        '--loop-mode',
         choices=['single', 'list', 'random'],
         default='list',
         help='auto_live only: loop current song, cycle the song list, or use random song selection',
     )
     parser.add_argument(
-        '--play-mode',
+        '--auto-mode',
         choices=['game_auto', 'script_auto'],
         default='game_auto',
         help='auto_live only: use in-game auto or script auto',
@@ -97,20 +99,31 @@ def validate_task_ids(
 
 
 def build_auto_live_kwargs(args: argparse.Namespace) -> dict[str, object]:
-    if not args.run_until_exhausted and (args.run_count is None or args.run_count <= 0):
-        raise ValueError('--run-count must be a positive integer unless --run-until-exhausted is set')
+    if args.count_mode == 'specify' and (args.count is None or args.count <= 0):
+        raise ValueError('--count must be a positive integer when --count-mode=specify')
+    payload = {
+        'countMode': args.count_mode,
+        'count': '' if args.count_mode == 'all' else str(args.count),
+        'loopMode': args.loop_mode,
+        'playMode': args.auto_mode,
+        'debugEnabled': bool(args.debug_enabled),
+        'autoSetUnit': False,
+        'apMultiplier': '保持现状' if args.ap_multiplier is None else str(args.ap_multiplier),
+        'songName': '保持不变',
+    }
     return {
-        'run_count': None if args.run_until_exhausted else args.run_count,
-        'cycle_mode': args.cycle_mode,
-        'play_mode': args.play_mode,
-        'debug_enabled': bool(args.debug_enabled),
-        'ap_multiplier': args.ap_multiplier,
+        'plan': auto_live_payload_to_plan(payload),
     }
 
 
 def parse_cli_action(argv: Sequence[str] | None = None) -> CliAction:
+    argv_list = list(argv or [])
+    command_tokens = {'run', 'invoke', 'list'}
+    if argv_list and not any(token in command_tokens for token in argv_list):
+        parser = build_parser()
+        return CliAction(kind='show_help', help_text=parser.format_help())
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv_list)
 
     if args.command == 'list':
         return CliAction(

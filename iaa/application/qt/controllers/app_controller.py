@@ -1,0 +1,100 @@
+from __future__ import annotations
+
+from PySide6.QtCore import QObject, Property, Signal, Slot, QUrl
+from PySide6.QtGui import QDesktopServices
+
+from iaa.application.service.iaa_service import IaaService
+from iaa.telemetry import setup as setup_telemetry
+
+from .progress_bridge import ProgressBridge
+from .run_controller import RunController
+from .scrcpy_controller import ScrcpyController
+from .settings_controller import SettingsController
+
+
+class AppController(QObject):
+    notificationRaised = Signal(str, str)
+    globalErrorChanged = Signal()
+    telemetryConsentRequiredChanged = Signal()
+
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self.service = IaaService()
+        self.progressBridge = ProgressBridge(self)
+        self.scrcpyController = ScrcpyController(self.service.scheduler, self.service.config, self)
+        self.runController = RunController(self.service, self.progressBridge, self.scrcpyController, self)
+        self.settingsController = SettingsController(self.service, self)
+        self._global_error = ''
+        self._telemetry_consent_required = self.service.config.conf.telemetry.sentry is None
+        setup_telemetry(self.service.config.conf)
+
+        self.runController.operationSucceeded.connect(lambda text: self.notificationRaised.emit('success', text))
+        self.runController.operationFailed.connect(self.reportError)
+        self.settingsController.operationSucceeded.connect(lambda text: self.notificationRaised.emit('success', text))
+        self.settingsController.operationFailed.connect(self.reportError)
+        self.service.scheduler.on_error = self._on_scheduler_error
+
+    def _on_scheduler_error(self, exc: Exception) -> None:
+        self.reportError(str(exc))
+
+    def _get_version(self) -> str:
+        return self.service.version
+
+    def _get_window_title(self) -> str:
+        return f'一歌小助手 v{self.service.version}'
+
+    def _get_assets_root_path(self) -> str:
+        return self.service.assets.assets_root_path.replace('\\', '/')
+
+    def _get_global_error(self) -> str:
+        return self._global_error
+
+    def _get_telemetry_consent_required(self) -> bool:
+        return self._telemetry_consent_required
+
+    version = Property(str, _get_version, constant=True)
+    windowTitle = Property(str, _get_window_title, constant=True)
+    assetsRootPath = Property(str, _get_assets_root_path, constant=True)
+    globalError = Property(str, _get_global_error, notify=globalErrorChanged)
+    telemetryConsentRequired = Property(bool, _get_telemetry_consent_required, notify=telemetryConsentRequiredChanged)
+
+    @Slot(str)
+    def openExternalUrl(self, url: str) -> None:
+        QDesktopServices.openUrl(QUrl(url))
+
+    @Slot(str)
+    def reportError(self, message: str) -> None:
+        self._global_error = message
+        self.globalErrorChanged.emit()
+        self.notificationRaised.emit('error', message)
+
+    @Slot()
+    def clearGlobalError(self) -> None:
+        if not self._global_error:
+            return
+        self._global_error = ''
+        self.globalErrorChanged.emit()
+
+    @Slot(bool)
+    def setTelemetryConsent(self, allowed: bool) -> None:
+        self.service.config.conf.telemetry.sentry = allowed
+        self.service.config.save()
+        self._telemetry_consent_required = False
+        self.telemetryConsentRequiredChanged.emit()
+        self.notificationRaised.emit('success', '数据收集设置将于下次启动时生效。')
+
+    @Slot(result=bool)
+    def confirmClose(self) -> bool:
+        scheduler = self.service.scheduler
+        if not scheduler.running:
+            return True
+        try:
+            scheduler.stop(block=True)
+        except Exception:
+            pass
+        return True
+
+    @Slot()
+    def shutdown(self) -> None:
+        self.progressBridge.close()
+        self.scrcpyController.set_visible(False)

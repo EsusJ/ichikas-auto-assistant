@@ -14,10 +14,10 @@ dependencies = [
     "onnxruntime==1.14.0 ; sys_platform == 'win32' or sys_platform == 'linux'",
     "onnxruntime ; sys_platform != 'win32'",
     "psutil",
+    "PySide6",
     "pydantic",
     "sentry-sdk",
     "thefuzz>=0.22.1",
-    "ttkbootstrap>=1.14.2",
 ]
 
 [dependency-groups]

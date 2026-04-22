@@ -1,6 +1,6 @@
 import unittest
 
-from iaa.application.desktop.scrcpy_viewer import DisplayMapping, map_canvas_to_image
+from iaa.application.qt.models.scrcpy import DisplayMapping, map_canvas_to_image
 
 
 class ScrcpyViewerMappingTests(unittest.TestCase):

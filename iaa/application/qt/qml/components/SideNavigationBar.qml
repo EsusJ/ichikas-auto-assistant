@@ -1,0 +1,109 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import ".." as App
+
+// import Iaa.Controllers 1.0
+
+Rectangle {
+    id: root
+    width: 200
+    color: "transparent"
+
+    property var model: []
+    property int currentIndex: 0
+    property int previousIndex: 0
+    signal currentChanging(int index, int previousIndex)
+
+    function confirmSwitch(index) {
+        root.currentIndex = index
+    }
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.topMargin: 6
+        anchors.bottomMargin: 12
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        spacing: 12
+
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: 82
+            color: "transparent"
+
+            RowLayout {
+                anchors.fill: parent
+                // anchors.margins: 12
+                spacing: 10
+
+                Rectangle {
+                    Layout.preferredWidth: 66
+                    Layout.preferredHeight: 66
+                    radius: 22
+                    color: "transparent"
+                    clip: true
+
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 2
+                        source: App.Globals.assetPath("chibi/chr_il_1.png")
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: "一歌小助手"
+                        font.pixelSize: 18
+                        font.weight: Font.DemiBold
+                        color: "#202020"
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: "版本 v" + appController.version
+                        font.pixelSize: 12
+                        color: "#202020"
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+            }
+        }
+
+        ComboBox {
+            Layout.fillWidth: true
+            model: ["默认配置"]
+        }
+
+        ListView {
+            id: listView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            model: root.model
+            spacing: 4
+            interactive: false
+
+            delegate: ItemDelegate {
+                id: delegate
+                width: listView.width
+                height: 40
+                text: modelData
+                font.pixelSize: 14
+                highlighted: root.currentIndex === index
+
+                onClicked: {
+                    root.previousIndex = root.currentIndex
+                    root.currentChanging(index, root.previousIndex)
+                }
+            }
+        }
+    }
+}
