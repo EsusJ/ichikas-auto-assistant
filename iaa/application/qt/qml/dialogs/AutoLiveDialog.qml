@@ -14,12 +14,12 @@ Dialog {
     function defaultPayload() {
         return {
             countMode: "specify",
-            count: "10",
-            loopMode: "list",
-            playMode: "game_auto",
+            count: "1000",          // 1. 默认次数 1000
+            loopMode: "single",     // 2. 默认单曲循环
+            playMode: "script_auto",// 3. 默认脚本自动
             debugEnabled: false,
             autoSetUnit: false,
-            apMultiplier: "保持现状",
+            apMultiplier: "保持现状",// 4. 默认AP：保持现状
             songName: "保持不变"
         }
     }
@@ -121,7 +121,8 @@ Dialog {
             RadioButton {
                 text: "脚本自动"
                 checked: formData.playMode === "script_auto"
-                onClicked: formData = Object.assign({}, formData, { playMode: "script_auto", apMultiplier: "0" })
+                // 旧代码：apMultiplier: "0"  ← 删掉这个！
+                onClicked: formData = Object.assign({}, formData, { playMode: "script_auto" })
             }
         }
 
@@ -129,7 +130,8 @@ Dialog {
             Label { text: "AP 倍率" }
             ComboBox {
                 model: ["保持现状", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-                enabled: formData.playMode !== "script_auto"
+                // 旧：enabled: formData.playMode !== "script_auto"
+                enabled: true  // 永远启用，脚本自动也能选
                 currentIndex: model.indexOf(formData.apMultiplier)
                 onActivated: formData = Object.assign({}, formData, { apMultiplier: model[currentIndex] })
             }
