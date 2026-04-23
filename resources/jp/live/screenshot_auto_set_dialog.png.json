@@ -1,0 +1,80 @@
+{
+  "version": 3,
+  "definitions": {
+    "2eb13fe9-08d5-4cee-a18a-57b8c37215a5": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.AutoSetDialog.TextEventMember",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 860,
+          "y1": 153.67901913153756,
+          "x2": 945,
+          "y2": 218.6373433970985
+        },
+        "fixed": true
+      },
+      "displayName": "自动编队 活动成员",
+      "variant_policy": {
+        "tw": "require"
+      }
+    },
+    "ab73f9bb-7999-4282-bf33-b45f8e049b38": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.AutoSetDialog.TextRecommend",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 349,
+          "y1": 268.6052851398377,
+          "x2": 444,
+          "y2": 320.5719445522864
+        },
+        "fixed": true
+      },
+      "displayName": "自动编队 推荐",
+      "variant_policy": {
+        "tw": "require"
+      }
+    },
+    "b57ec406-7be0-4220-b7c2-59d8570a8450": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.AutoSetDialog.ButtonConfirm",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 720,
+          "y1": 632.5001340560221,
+          "x2": 800,
+          "y2": 682.4680757987613
+        },
+        "fixed": true
+      },
+      "displayName": "自动编队 确定按钮",
+      "variant_policy": {
+        "tw": "require"
+      }
+    },
+    "9dd57d2f-2810-4caf-878e-eb7d70438211": {
+      "type": "prefab",
+      "prefab_id": "TemplateMatchPrefab",
+      "name": "Live.AutoSetDialog.TextUnitRecommend",
+      "props": {
+        "template": {
+          "kind": "image",
+          "x1": 348.40522439831363,
+          "y1": 105.51647465840881,
+          "x2": 445.3896952879022,
+          "y2": 150.4707520042624
+        },
+        "fixed": true
+      },
+      "variant_policy": {
+        "tw": "require"
+      }
+    }
+  }
+}

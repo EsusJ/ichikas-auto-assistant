@@ -1,6 +1,8 @@
 import contextvars
 from typing import Optional, Any
 
+from iaa.input import AdbKeyboardInput
+
 
 from .config.base import IaaConfig
 from .errors import ContextNotInitializedError
@@ -8,6 +10,7 @@ from iaa.progress import DummyTaskReporter, ProgressHub, TaskReporter
 
 g_conf: contextvars.ContextVar[Optional[IaaConfig]] = contextvars.ContextVar('g_conf', default=None)
 g_task_reporter: contextvars.ContextVar[Optional[Any]] = contextvars.ContextVar('g_task_reporter', default=None)
+g_adb_keyboard_input: contextvars.ContextVar[Optional[AdbKeyboardInput]] = contextvars.ContextVar('g_adb_keyboard_input', default=None)
 _hub = ProgressHub()
 _dummy_reporter = DummyTaskReporter()
 
@@ -42,3 +45,13 @@ def task_reporter() -> TaskReporter | DummyTaskReporter:
     if reporter is None:
         return _dummy_reporter
     return reporter
+
+def set_adb_keyboard(ins: AdbKeyboardInput):
+    return g_adb_keyboard_input.set(ins)
+
+def keyboard() -> AdbKeyboardInput:
+    ins = g_adb_keyboard_input.get()
+    if ins is None:
+        ins = AdbKeyboardInput()
+        g_adb_keyboard_input.set(ins)
+    return ins

@@ -1,3 +1,5 @@
+import time
+
 from kotonebot import logging
 from kotonebot.core import AnyOf
 from kotonebot import device, task, Loop, action, sleep
@@ -9,6 +11,20 @@ from iaa.context import conf as get_conf, task_reporter
 
 logger = logging.getLogger(__name__)
 
+def _sleep(sec: float, msg: str = '', interval: float = 1):
+    """带有任务消息更新的 sleep。
+
+    :param sec: 睡眠总时长，单位秒
+    :param msg: 要显示的消息，其中可以包含一个 `%d` 来显示剩余秒数， defaults to ''
+    :param interval: 检查间隔，单位秒， defaults to 1
+    """
+    rp = task_reporter()
+    logger.debug(f'Sleeping for {sec} seconds.')
+    start_time = time.time()
+    while time.time() - start_time < sec:
+        if msg:
+            rp.message(msg % max(0, int(sec - (time.time() - start_time))))
+        sleep(interval)
 
 @action('是否位于交叉路口')
 def is_at_intersection() -> bool:
@@ -17,8 +33,8 @@ def is_at_intersection() -> bool:
     #     R.Scene.Intersection.IconCm
     # ].find(threshold=0.8) is not None
     return (
-        R.Scene.Intersection.BuildingLogo.find(threshold=0.9) is not None or
-        R.Scene.Intersection.IconCm.find(threshold=0.9) is not None
+        R.Scene.Intersection.BuildingLogo.q(threshold=0.9).find() is not None or
+        R.Scene.Intersection.IconCm.q(threshold=0.9).find() is not None
     )
 
 @action('前往交叉路口', screenshot_mode='manual')
@@ -73,7 +89,7 @@ def open_cm() -> bool:
     swipe_count = 0
     MAX_SWIPE_COUNT = 5
     for _ in Loop(interval=0.6):
-        if ret := R.Scene.Intersection.IconCm.find(threshold=0.6):
+        if ret := R.Scene.Intersection.IconCm.q(threshold=0.6).find():
             # TODO: 改用 image.find 的 rect 参数重构
             x1, y1, x2, y2 = R.Cm.BoxCmIconDetectRect.xyxy
             x, y = ret.rect.center
@@ -110,7 +126,7 @@ def clear_common_cm():
     for _ in Loop(interval=0.6):
         if state == 1:
             # 开始看
-            if R.Cm.ButtonCmStart.try_click(threshold=0.7):
+            if R.Cm.ButtonCmStart.q(threshold=0.7).try_click():
                 logger.debug('Clicked 視聴開始 button.')
                 sleep(1)
                 state = 2
@@ -123,7 +139,7 @@ def clear_common_cm():
                 logger.info('All ads cleared.')
                 break
         elif state == 2:
-            if R.Cm.ButtonPlayCm.find(threshold=0.7):
+            if R.Cm.ButtonPlayCm.q(threshold=0.7).find():
                 rep.message('等待广告载入')
                 logger.debug('Loading ad...')
                 sleep(0.2)
@@ -132,7 +148,7 @@ def clear_common_cm():
                 logger.info(f'Ad loaded. Wait {wait_sec} sec.')
                 state = 3
         elif state == 3:
-            sleep(wait_sec)
+            _sleep(wait_sec, msg='等待广告结束，剩余 %d 秒')
             logger.debug('Wait ad finished.')
             # 返回桌面再重新打开游戏就可以关闭广告
             d.commands.adb_shell('input keyevent KEYCODE_HOME')
