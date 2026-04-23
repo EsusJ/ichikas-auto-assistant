@@ -1,9 +1,9 @@
-name: Build Application (0415 Branch)
+name: Build Application (0424 Branch) # 1. 重命名为0424分支
 
 on:
   push:
-    branches: [ "0415" ] # 专门监听 0415 分支的推送
-  workflow_dispatch:     # 依然保留手动触发的按钮
+    branches: [ "0424" ] # 2. 监听分支改为0424
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -12,7 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        # 默认会 check out 触发该 action 的分支，也就是 0415
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -20,20 +19,19 @@ jobs:
           version: "latest"
 
       - name: Set up Python
-        # 明确指定使用 3.10 版本，解决 onnxruntime 的依赖报错
         run: uv python install 3.10 
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync # 【关键】这里会自动安装PySide6，前提是你项目配置了依赖
 
       - name: Generate resources
-        run: uv run python tools/make_resources.py
+        run: uv run python tools/make_resources.py # 【需适配】QML资源文件需要改这个脚本
 
       - name: Build executable
-        run: uv run python build.py build  # <--- 注意这里在末尾加了 build
+        run: uv run python build.py build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iaa-windows-build-0415
-          path: dist_app/                  # <--- 注意这里改成 dist_app/
+          name: iaa-windows-build-0424 # 3. 制品名改为0424
+          path: dist_app/ # 输出路径不变，无需修改
